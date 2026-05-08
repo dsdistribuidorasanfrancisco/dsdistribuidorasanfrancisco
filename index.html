@@ -1969,10 +1969,9 @@ function exportInventoryCSV(){
   var q=(document.getElementById("adminSearch")?.value||"").toLowerCase().trim();
   var lista=q?products.filter(function(p){return p.name.toLowerCase().includes(q)||(p.sku||"").toLowerCase().includes(q);}):products;
   if(!lista.length){toast("No hay productos que coincidan con la búsqueda","error");return;}
-  var headers=["id","sku","nombre","precio","precio_oferta","precio_media_docena","precio_docena","precio_fardo","stock","descripcion","imgUrl","Categoría"];
+  var headers=["sku","nombre","precio","precio_oferta","precio_media_docena","precio_docena","precio_fardo","stock","descripcion","imgUrl","Categoría"];
   var rows=lista.map(function(p){
     return [
-      p.id,
       fCSV(p.sku||""),
       fCSV(p.name||""),
       p.price||0,
@@ -2043,12 +2042,9 @@ function importInventoryCSV(e){
         var precio_docena=idx.precio_docena>=0?parseFloat(cols[idx.precio_docena])||0:0;
         var precio_fardo=idx.precio_fardo>=0?parseFloat(cols[idx.precio_fardo])||0:0;
         var precio_mayoristas=precio_docena||precio_media_docena||precio_fardo||0;
-        var eid=idx.id>=0?parseInt(cols[idx.id]):NaN;
-        var ex=!isNaN(eid)
-          ? products.find(function(p){return p.id===eid;})
-          : (sku
-              ? products.find(function(p){return p.sku&&p.sku===sku;})||products.find(function(p){return p.name.toLowerCase()===name.toLowerCase();})
-              : products.find(function(p){return p.name.toLowerCase()===name.toLowerCase();}));
+        var ex=sku
+          ? products.find(function(p){return p.sku&&p.sku.trim()===sku.trim();})||products.find(function(p){return p.name.toLowerCase().trim()===name.toLowerCase().trim();})
+          : products.find(function(p){return p.name.toLowerCase().trim()===name.toLowerCase().trim();});
         if(ex){Object.assign(ex,{sku:sku,name:name,price:price,stock:stock,desc:desc,imgUrl:imgUrl||ex.imgUrl||"",categoria:categoria,precio_oferta:precio_oferta,precio_media_docena:precio_media_docena,precio_docena:precio_docena,precio_fardo:precio_fardo,precio_mayoristas:precio_mayoristas});updated++;}
         else{products.push({id:nextId(),sku:sku,name:name,price:price,stock:stock,desc:desc,img:"",imgUrl:imgUrl,categoria:categoria,precio_oferta:precio_oferta,precio_media_docena:precio_media_docena,precio_docena:precio_docena,precio_fardo:precio_fardo,precio_mayoristas:precio_mayoristas});added++;}
       }
