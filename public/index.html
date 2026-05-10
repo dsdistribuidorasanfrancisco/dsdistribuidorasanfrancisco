@@ -1847,7 +1847,8 @@ function deleteAllInventory(){
   renderShop();
   toast("Inventario eliminado","success");
 }
-const IMGBB_KEY="5f48addaa353d0b6739f660b12d2d0d8";
+const CLOUDINARY_CLOUD_NAME="dxxlersgi";
+const CLOUDINARY_UPLOAD_PRESET="ds-distribuidora";
 
 function previewImg(input){
   const file=input.files[0]; if(!file)return;
@@ -1868,14 +1869,13 @@ function previewImg(input){
 }
 
 async function uploadToImgBB(base64data){
-  const base64=base64data.split(",")[1];
   const formData=new FormData();
-  formData.append("key", IMGBB_KEY);
-  formData.append("image", base64);
-  const res=await fetch("https://api.imgbb.com/1/upload", {method:"POST", body:formData});
+  formData.append("file", base64data);
+  formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+  const res=await fetch("https://api.cloudinary.com/v1_1/"+CLOUDINARY_CLOUD_NAME+"/image/upload",{method:"POST",body:formData});
   const json=await res.json();
-  if(!json.success) throw new Error("ImgBB error: "+json.error?.message);
-  return json.data.url;
+  if(json.error) throw new Error("Cloudinary error: "+json.error.message);
+  return json.secure_url;
 }
 function previewUrl(input){const prev=document.getElementById("imgPreview");if(input.value){prev.src=input.value;prev.style.display="block";}else prev.style.display="none";}
 
