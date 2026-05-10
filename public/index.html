@@ -617,9 +617,9 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
 
   /* Carrito de Compras */
   .cart-container { gap: 1rem; }
-  .cart-item { flex-direction: column; align-items: flex-start; padding: 1rem; gap: 0.8rem; position: relative; }
-  .cart-item-img { width: 100%; height: 120px; border-radius: 8px; }
-  .cart-item-info { width: 100%; }
+  .cart-item { flex-direction: column; align-items: flex-start; padding: 0; gap: 0; position: relative; overflow: hidden; }
+  .cart-item-img { width: 100%; height: 200px; border-radius: 0; border-top-left-radius: var(--radius-md); border-top-right-radius: var(--radius-md); object-fit: cover; display: block; }
+  .cart-item-info { width: 100%; padding: 1rem; }
   .cart-total-price { position: absolute; bottom: 1rem; right: 1rem; font-size: 1.1rem; }
   .qty-controls { margin-top: 1rem; }
   .qty-btn { width: 36px; height: 36px; font-size: 1.2rem; }
