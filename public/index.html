@@ -1116,9 +1116,15 @@ function localLoad(){
   // Compatibilidad — ahora init() maneja la carga
   cart=JSON.parse(localStorage.getItem("lx_cart")||"[]");
 }
+let _savingProducts=false;
 function saveProducts(){
   localStorage.setItem("lx_products",JSON.stringify(products));
-  if(window._fb && window._fb.ready()) window._fb.saveProducts(products);
+  if(window._fb && window._fb.ready()){
+    _savingProducts=true;
+    window._fb.saveProducts(products).then(()=>{
+      setTimeout(()=>{_savingProducts=false;},2000);
+    }).catch(()=>{_savingProducts=false;});
+  }
 }
 function saveOrders(){
   localStorage.setItem("lx_orders",JSON.stringify(orders));
@@ -1188,6 +1194,7 @@ function init(){
   // Escuchar cambios en tiempo real (para todos los visitantes)
   if(window._fb && window._fb.ready()){
     window._fb.watchProducts(arr=>{
+      if(_savingProducts) return; // evitar sobreescritura durante guardado
       products=arr;
       sortProductsAZ();
       localStorage.setItem("lx_products",JSON.stringify(products));
