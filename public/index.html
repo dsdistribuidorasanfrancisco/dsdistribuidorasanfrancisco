@@ -2097,7 +2097,7 @@ function exportInventoryCSV(){
       fCSV(p.categoria||"")
     ].join(",");
   });
-  var nombreArchivo=q?"inventario_"+q.replace(/\s+/g,"_")+".csv":"inventario_genesis.csv";
+  var nombreArchivo=q?"inventario_"+q.replace(/\s+/g,"_")+".csv":"inventario.csv";
   var csv="\uFEFF"+headers.join(",")+"\n"+rows.join("\n");
   var blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
   var url=URL.createObjectURL(blob);
