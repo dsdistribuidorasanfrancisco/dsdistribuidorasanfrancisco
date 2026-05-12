@@ -2476,43 +2476,77 @@ function openProductDetail(id) {
   // Collect all images (multi-image array or legacy single)
   const allImgs = (p.images && p.images.length) ? p.images : (p.img||p.imgUrl ? [p.img||p.imgUrl] : []);
 
-  // Imagen principal + galería
+  // Store imgs on window
+  window._pdAllImgs = allImgs;
+  window._pdActiveImg = 0;
+
+  // Imagen principal — carrusel deslizable estilo Mercado Libre
   const imgWrap = document.getElementById("pdImgWrap2");
+  const old = document.getElementById("pdGalleryThumbs"); if(old) old.remove();
+
   if (allImgs.length) {
-    const mainSrc = allImgs[0];
-    const _mainImg = document.createElement("img");
-    _mainImg.className = "pd-main-img"; _mainImg.id = "pdMainImg";
-    _mainImg.src = mainSrc; _mainImg.alt = p.name;
-    const _mainPh = document.createElement("div");
-    _mainPh.className = "pd-main-img-placeholder"; _mainPh.style.display = "none";
-    _mainPh.innerHTML = "🖼<span>Sin imagen</span>";
-    _mainImg.onerror = function(){ this.style.display="none"; _mainPh.style.display="flex"; };
-    imgWrap.innerHTML = ""; imgWrap.appendChild(_mainImg); imgWrap.appendChild(_mainPh);
+    imgWrap.innerHTML = "";
+    imgWrap.style.cssText = "position:relative;overflow:hidden;background:#fff;";
+
+    const track = document.createElement("div");
+    track.id = "pdCarouselTrack";
+    track.style.cssText = "display:flex;transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);will-change:transform;";
+    allImgs.forEach((src, i) => {
+      const slide = document.createElement("div");
+      slide.style.cssText = "min-width:100%;display:flex;align-items:center;justify-content:center;background:#fff;";
+      const img = document.createElement("img");
+      img.src = src; img.alt = p.name;
+      img.style.cssText = "width:100%;max-height:380px;object-fit:contain;display:block;";
+      img.onerror = function(){ this.parentNode.innerHTML="<div style='width:100%;height:260px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:4rem;color:#94a3b8;gap:0.5rem'>🖼<span style=\"font-size:1rem\">Sin imagen</span></div>"; };
+      slide.appendChild(img);
+      track.appendChild(slide);
+    });
+    imgWrap.appendChild(track);
+
     if(allImgs.length > 1){
-      let galleryEl = document.getElementById("pdGalleryThumbs");
-      if(!galleryEl){
-        galleryEl = document.createElement("div");
-        galleryEl.id = "pdGalleryThumbs";
-        galleryEl.className = "pd-gallery-thumbs";
-        imgWrap.parentNode.insertBefore(galleryEl, imgWrap.nextSibling);
-      }
-      galleryEl.innerHTML = "";
-      allImgs.forEach((src,i)=>{
-        const t = document.createElement("img");
-        t.className = "pd-gallery-thumb" + (i===0?" active":"");
-        t.src = src; t.dataset.idx = i;
-        t.onclick = ()=>_pdSetImg(i, id);
-        t.onerror = function(){ this.style.display="none"; };
-        galleryEl.appendChild(t);
+      const dots = document.createElement("div");
+      dots.id = "pdCarouselDots";
+      dots.style.cssText = "position:absolute;bottom:10px;left:0;right:0;display:flex;justify-content:center;gap:6px;z-index:5;pointer-events:none;";
+      allImgs.forEach((_,i)=>{
+        const d = document.createElement("span");
+        d.dataset.idx = i;
+        d.style.cssText = "width:8px;height:8px;border-radius:50%;background:"+(i===0?"#0821CC":"rgba(0,0,0,0.22)")+";transition:background 0.2s,transform 0.2s;display:inline-block;"+(i===0?"transform:scale(1.25);":"");
+        dots.appendChild(d);
       });
-    } else {
-      const old = document.getElementById("pdGalleryThumbs"); if(old) old.remove();
+      imgWrap.appendChild(dots);
+
+      let _tsX = 0, _tsY = 0, _dragging = false, _dx = 0;
+      track.addEventListener("touchstart", e=>{
+        _tsX = e.touches[0].clientX; _tsY = e.touches[0].clientY; _dragging = true; _dx = 0;
+        track.style.transition = "none";
+      }, {passive:true});
+      track.addEventListener("touchmove", e=>{
+        if(!_dragging) return;
+        _dx = e.touches[0].clientX - _tsX;
+        const dy = e.touches[0].clientY - _tsY;
+        if(Math.abs(_dx) < Math.abs(dy) && Math.abs(_dx) < 10) return;
+        const cur = window._pdActiveImg;
+        track.style.transform = "translateX(calc(-"+cur+"00% + "+_dx+"px))";
+      }, {passive:true});
+      track.addEventListener("touchend", ()=>{
+        if(!_dragging) return; _dragging = false;
+        track.style.transition = "transform 0.35s cubic-bezier(0.4,0,0.2,1)";
+        const cur = window._pdActiveImg;
+        if(_dx < -50 && cur < allImgs.length-1) _pdSetImg(cur+1);
+        else if(_dx > 50 && cur > 0) _pdSetImg(cur-1);
+        else _pdSetImg(cur);
+      });
+
+      let _msX = 0, _mDragging = false, _mdx = 0;
+      track.addEventListener("mousedown", e=>{ _msX=e.clientX; _mDragging=true; _mdx=0; track.style.transition="none"; track.style.cursor="grabbing"; });
+      track.addEventListener("mousemove", e=>{ if(!_mDragging) return; _mdx=e.clientX-_msX; const cur=window._pdActiveImg; track.style.transform="translateX(calc(-"+cur+"00% + "+_mdx+"px))"; });
+      track.addEventListener("mouseup", ()=>{ if(!_mDragging)return; _mDragging=false; track.style.transition="transform 0.35s cubic-bezier(0.4,0,0.2,1)"; track.style.cursor="grab"; const cur=window._pdActiveImg; if(_mdx<-50&&cur<allImgs.length-1)_pdSetImg(cur+1); else if(_mdx>50&&cur>0)_pdSetImg(cur-1); else _pdSetImg(cur); });
+      track.addEventListener("mouseleave", ()=>{ if(_mDragging){_mDragging=false;track.style.transition="transform 0.35s cubic-bezier(0.4,0,0.2,1)";track.style.cursor="grab";_pdSetImg(window._pdActiveImg);} });
+      track.style.cursor = "grab";
     }
   } else {
     imgWrap.innerHTML = "<div class='pd-main-img-placeholder'>🖼<span>Sin imagen</span></div>";
-    const old = document.getElementById("pdGalleryThumbs"); if(old) old.remove();
   }
-  window._pdAllImgs = allImgs;
 
   document.getElementById("pdBreadcrumb").textContent = p.name;
 
@@ -2556,18 +2590,24 @@ function openProductDetail(id) {
 
 function closeProductDetail() {
   _pdCurrentId = null;
+  window._pdAllImgs = [];
+  window._pdActiveImg = 0;
   window.history.pushState({}, storeSettings.name || "Tienda", window.location.origin + "/");
   document.title = storeSettings.name || "Tienda";
-  const old = document.getElementById("pdGalleryThumbs"); if(old) old.remove();
   showPage("shop");
 }
 
-function _pdSetImg(idx, productId){
+function _pdSetImg(idx){
   const imgs = window._pdAllImgs;
-  if(!imgs || !imgs[idx]) return;
-  const main = document.getElementById("pdMainImg");
-  if(main){ main.src = imgs[idx]; main.style.display=""; }
-  document.querySelectorAll(".pd-gallery-thumb").forEach((t,i)=>t.classList.toggle("active",i===idx));
+  if(!imgs || idx < 0 || idx >= imgs.length) return;
+  window._pdActiveImg = idx;
+  const track = document.getElementById("pdCarouselTrack");
+  if(track) track.style.transform = "translateX(-" + idx + "00%)";
+  const dots = document.querySelectorAll("#pdCarouselDots span");
+  dots.forEach((d,i)=>{
+    d.style.background = i===idx ? "#0821CC" : "rgba(0,0,0,0.22)";
+    d.style.transform = i===idx ? "scale(1.25)" : "scale(1)";
+  });
 }
 
 function pdAddToCart() {
