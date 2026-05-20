@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>DS Distribuidora San Francisco NO.3</title>
+<title>DS Distribuidora San Francisco</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
@@ -12,14 +12,15 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getDatabase, ref, onValue, set, push, update, remove, get }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyC3CGd8PsSm6qnBSGT0TdG_JTorOK_a9Vw",
-  authDomain: "dsdistribuidorasfc3.firebaseapp.com",
-  databaseURL: "https://dsdistribuidorasfc3-default-rtdb.firebaseio.com",
-  projectId: "dsdistribuidorasfc3",
-  storageBucket: "dsdistribuidorasfc3.firebasestorage.app",
-  messagingSenderId: "553259515635",
-  appId: "1:553259515635:web:6bfdce6b30ba372f208186"
+const _savedFbCfg = JSON.parse(localStorage.getItem("lx_fb_config") || "null");
+const FIREBASE_CONFIG = _savedFbCfg || {
+  apiKey: "AIzaSyDZdWP-sLVQGTjmXzZxtmf3ltxaUmJa8jc",
+  authDomain: "dsdistribuidorasfc-2e8ed.firebaseapp.com",
+  databaseURL: "https://dsdistribuidorasfc-2e8ed-default-rtdb.firebaseio.com",
+  projectId: "dsdistribuidorasfc-2e8ed",
+  storageBucket: "dsdistribuidorasfc-2e8ed.firebasestorage.app",
+  messagingSenderId: "811740502468",
+  appId: "1:811740502468:web:e7c50492e8738f2fffec91"
 };
 const FB_CONFIGURED = true;
 
@@ -370,6 +371,90 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
   transform: translateX(-50%) translateY(0);
 }
 
+/* ── Página Detalle Producto ── */
+#page-product { display:none; min-height:100vh; background:var(--bg); animation:fadeIn 0.2s ease; }
+#page-product.active { display:block; }
+.pd-back-bar { display:flex; align-items:center; gap:0.7rem; padding:1rem 1.2rem; background:var(--surface); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:10; }
+.pd-back-btn { background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--dark); padding:0.2rem 0.4rem; border-radius:6px; line-height:1; }
+.pd-back-bar span { font-size:0.9rem; color:var(--text-muted); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.pd-main-img { width:100%; max-height:380px; object-fit:contain; background:#fff; display:block; }
+.pd-main-img-placeholder { width:100%; height:260px; display:flex; flex-direction:column; align-items:center; justify-content:center; background:var(--bg); font-size:4rem; color:var(--text-muted); gap:0.5rem; }
+.pd-content { padding:1.4rem 1.2rem 6rem; }
+.pd-badge2 { display:inline-block; padding:0.25rem 0.8rem; border-radius:100px; font-size:0.75rem; font-weight:700; margin-bottom:0.9rem; }
+.pd-title { font-family:"Plus Jakarta Sans",serif; font-size:1.5rem; font-weight:800; color:var(--dark); line-height:1.25; margin-bottom:0.5rem; }
+.pd-sku2 { font-size:0.82rem; color:var(--text-muted); font-weight:600; margin-bottom:1rem; }
+.pd-divider { border:none; border-top:1px solid var(--border); margin:1rem 0; }
+.pd-price2 { font-size:2.2rem; font-weight:800; color:var(--accent); margin-bottom:0.2rem; }
+.pd-price2-old { font-size:1rem; color:var(--text-muted); text-decoration:line-through; margin-bottom:0.5rem; }
+.pd-avail { font-size:0.9rem; font-weight:700; margin-bottom:1.5rem; }
+.pd-desc2 { font-size:0.95rem; color:var(--text-muted); line-height:1.7; margin-bottom:1.5rem; }
+/* Galería múltiples imágenes */
+.pd-gallery-thumbs { display:flex; gap:0.6rem; padding:0.8rem 1.2rem; overflow-x:auto; scrollbar-width:none; background:var(--bg); border-bottom:1px solid var(--border); }
+.pd-gallery-thumbs::-webkit-scrollbar { display:none; }
+.pd-gallery-thumb { width:60px; height:60px; border-radius:var(--radius-sm); object-fit:cover; cursor:pointer; border:2px solid transparent; flex-shrink:0; transition:border-color 0.2s; }
+.pd-gallery-thumb.active { border-color:var(--accent); box-shadow:0 0 0 2px rgba(8,33,204,0.2); }
+/* Multi-image admin rows */
+.img-row { display:flex; align-items:center; gap:0.6rem; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); padding:0.6rem 0.8rem; }
+.img-row-thumb { width:44px; height:44px; border-radius:6px; object-fit:cover; background:var(--bg); flex-shrink:0; border:1px solid var(--border); }
+.img-row input[type=text] { flex:1; border:none; outline:none; font-size:0.88rem; font-family:inherit; background:transparent; color:var(--dark); min-width:0; }
+.img-row-del { background:none; border:none; color:var(--red); font-size:1.2rem; cursor:pointer; padding:0 0.3rem; flex-shrink:0; line-height:1; }
+.pd-fixed-bar { position:fixed; bottom:0; left:0; right:0; background:var(--surface); border-top:1px solid var(--border); padding:1rem 1.2rem; display:flex; gap:0.8rem; z-index:20; max-width:600px; margin:0 auto; }
+.pd-fixed-bar .pd-btn-add { flex:1; background:var(--accent); color:#fff; border:none; border-radius:var(--radius-sm); padding:1rem; font-size:1rem; font-weight:700; cursor:pointer; font-family:inherit; transition:0.2s; }
+.pd-fixed-bar .pd-btn-add:disabled { background:var(--border); color:var(--text-muted); cursor:not-allowed; }
+.pd-fixed-bar .pd-btn-share2 { background:var(--bg); border:1.5px solid var(--border); color:var(--dark); border-radius:var(--radius-sm); padding:1rem 1.1rem; font-size:1.1rem; cursor:pointer; font-family:inherit; transition:0.2s; white-space:nowrap; font-weight:700; }
+
+.product-card { position: relative; }
+.product-card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.8rem;
+}
+.share-product-btn {
+  width: 100%;
+  background: transparent;
+  border: 2px solid var(--accent);
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  font-family: "Inter", sans-serif;
+  transition: all 0.2s ease;
+  letter-spacing: 0.01em;
+}
+.share-product-btn:hover { background: var(--accent); color: #fff; }
+.share-product-btn:active { opacity: 0.7; }
+.share-product-btn:focus { outline: none; }
+/* Share toast popup */
+.share-popup {
+  position: fixed;
+  bottom: 5rem;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--dark);
+  color: #fff;
+  padding: 0.7rem 1.4rem;
+  border-radius: 100px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s ease;
+  z-index: 9999;
+  white-space: nowrap;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+}
+.share-popup.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
 /* Pagination */
 .pagination-bar { display: flex; gap: 0.5rem; justify-content: center; margin-top: 2.5rem; flex-wrap: wrap; }
 .pg-btn { padding: 0.6rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); cursor: pointer; font-size: 0.95rem; font-weight: 600; transition: all 0.2s; color: var(--dark); box-shadow: var(--shadow-sm); }
@@ -489,38 +574,6 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
 .order-success { text-align: center; padding: 2rem 0; } .order-success .check { font-size: 5rem; margin-bottom: 1.5rem; animation: scaleIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 @keyframes scaleIn { 0% { transform: scale(0); } 100% { transform: scale(1); } }
 
-/* ── Página Detalle Producto ── */
-#page-product { display:none; min-height:100vh; background:var(--bg); animation:fadeIn 0.2s ease; }
-#page-product.active { display:block; }
-.pd-back-bar { display:flex; align-items:center; gap:0.7rem; padding:1rem 1.2rem; background:var(--surface); border-bottom:1px solid var(--border); position:sticky; top:0; z-index:10; }
-.pd-back-btn { background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--dark); padding:0.2rem 0.4rem; border-radius:6px; line-height:1; }
-.pd-back-bar span { font-size:0.9rem; color:var(--text-muted); font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.pd-main-img { width:100%; max-height:380px; object-fit:contain; background:#fff; display:block; }
-.pd-main-img-placeholder { width:100%; height:260px; display:flex; flex-direction:column; align-items:center; justify-content:center; background:var(--bg); font-size:4rem; color:var(--text-muted); gap:0.5rem; }
-.pd-content { padding:1.4rem 1.2rem 6rem; }
-.pd-badge2 { display:inline-block; padding:0.25rem 0.8rem; border-radius:100px; font-size:0.75rem; font-weight:700; margin-bottom:0.9rem; }
-.pd-title { font-family:"Plus Jakarta Sans",serif; font-size:1.5rem; font-weight:800; color:var(--dark); line-height:1.25; margin-bottom:0.5rem; }
-.pd-sku2 { font-size:0.82rem; color:var(--text-muted); font-weight:600; margin-bottom:1rem; }
-.pd-divider { border:none; border-top:1px solid var(--border); margin:1rem 0; }
-.pd-price2 { font-size:2.2rem; font-weight:800; color:var(--accent); margin-bottom:0.2rem; }
-.pd-price2-old { font-size:1rem; color:var(--text-muted); text-decoration:line-through; margin-bottom:0.5rem; }
-.pd-avail { font-size:0.9rem; font-weight:700; margin-bottom:1.5rem; }
-.pd-desc2 { font-size:0.95rem; color:var(--text-muted); line-height:1.7; margin-bottom:1.5rem; }
-/* Galería múltiples imágenes */
-.pd-gallery-thumbs { display:flex; gap:0.6rem; padding:0.8rem 1.2rem; overflow-x:auto; scrollbar-width:none; background:var(--bg); border-bottom:1px solid var(--border); }
-.pd-gallery-thumbs::-webkit-scrollbar { display:none; }
-.pd-gallery-thumb { width:60px; height:60px; border-radius:var(--radius-sm); object-fit:cover; cursor:pointer; border:2px solid transparent; flex-shrink:0; transition:border-color 0.2s; }
-.pd-gallery-thumb.active { border-color:var(--accent); box-shadow:0 0 0 2px rgba(8,33,204,0.2); }
-/* Multi-image admin rows */
-.img-row { display:flex; align-items:center; gap:0.6rem; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-sm); padding:0.6rem 0.8rem; }
-.img-row-thumb { width:44px; height:44px; border-radius:6px; object-fit:cover; background:var(--bg); flex-shrink:0; border:1px solid var(--border); }
-.img-row input[type=text] { flex:1; border:none; outline:none; font-size:0.88rem; font-family:inherit; background:transparent; color:var(--dark); min-width:0; }
-.img-row-del { background:none; border:none; color:var(--red); font-size:1.2rem; cursor:pointer; padding:0 0.3rem; flex-shrink:0; line-height:1; }
-.pd-fixed-bar { position:fixed; bottom:0; left:0; right:0; background:var(--surface); border-top:1px solid var(--border); padding:1rem 1.2rem; display:flex; gap:0.8rem; z-index:20; max-width:600px; margin:0 auto; }
-.pd-fixed-bar .pd-btn-add { flex:1; background:var(--accent); color:#fff; border:none; border-radius:var(--radius-sm); padding:1rem; font-size:1rem; font-weight:700; cursor:pointer; font-family:inherit; transition:0.2s; }
-.pd-fixed-bar .pd-btn-add:disabled { background:var(--border); color:var(--text-muted); cursor:not-allowed; }
-.pd-fixed-bar .pd-btn-share2 { background:var(--bg); border:1.5px solid var(--border); color:var(--dark); border-radius:var(--radius-sm); padding:1rem 1.1rem; font-size:1.1rem; cursor:pointer; font-family:inherit; transition:0.2s; white-space:nowrap; font-weight:700; }
-
 /* Loaders & Toasts */
 .loading-overlay { position: fixed; inset: 0; background: var(--dark); z-index: 500; display: none; flex-direction: column; align-items: center; justify-content: center; color: #fff; gap: 1rem; }
 .loading-overlay.show { display: flex; }
@@ -624,7 +677,7 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
 <nav class="navbar">
   <div class="nav-logo">
     <img id="storeLogo" src="" alt="">
-    <span id="storeNameEl">DS DISTRIBUIDORA SAN FRANCISCO NO.3</span>
+    <span id="storeNameEl">DS Distribuidora San Francisco</span>
   </div>
   <div class="nav-links">
     <button class="nav-btn active" onclick="showPage('shop')">Tienda</button>
@@ -647,7 +700,7 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
     <div class="hero-logo-wrap">
       <img id="heroLogo" src="" alt="Logo">
     </div>
-    <h1 id="heroTitle">Bienvenido a<br><span>DS DISTRIBUIDORA SAN FRANCISCO NO.3</span></h1>
+    <h1 id="heroTitle">Bienvenido a<br><span>DS Distribuidora San Francisco</span></h1>
     <p id="heroSubtitle">Los mejores productos al mejor precio</p>
   </div>
   <h2 class="section-title">Catálogo de Productos</h2>
@@ -996,7 +1049,7 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
   <div class="modal quote-modal">
     <div class="quote-header">
       <div style="font-size:3rem; margin-bottom: 0.5rem">📋</div>
-      <h3 id="quoteStoreName" style="margin:0 0 0.5rem; font-size:1.8rem;">DS DISTRIBUIDORA SAN FRANCISCO NO.3</h3>
+      <h3 id="quoteStoreName" style="margin:0 0 0.5rem; font-size:1.8rem;">DS Distribuidora San Francisco</h3>
       <div style="font-size:0.95rem;color:var(--text-muted);font-weight:500;" id="quoteDate"></div>
     </div>
     <div style="margin-bottom:1.5rem">
@@ -1040,7 +1093,7 @@ const GT_DATA = {"Guatemala": ["Guatemala", "Santa Catarina Pinula", "San José 
 let products=[], orders=[], cart=[];
 let editingId=null, loggedIn=false, currentPage=1;
 const PAGE_SIZE=24;
-let storeSettings={name:"DS DISTRIBUIDORA SAN FRANCISCO NO.3",desc:"Los mejores productos al mejor precio",logo:"",waNumber:"",credentials:"Dssanfrancisco:sfu2026",mayoreoConfig:null,shippingZones:{},defaultShipping:25,freeShippingAt:300,
+let storeSettings={name:"DS Distribuidora San Francisco",desc:"Los mejores productos al mejor precio",logo:"",waNumber:"",credentials:"Dssanfrancisco:sfu2026",mayoreoConfig:null,shippingZones:{},defaultShipping:25,freeShippingAt:300,
   paymentMethods:{
     cod:{enabled:true,label:"Pago Contra Entrega",icon:"🚚",desc:""},
     transfer:{enabled:false,label:"Transferencia Bancaria",icon:"🏦",desc:""},
@@ -1084,9 +1137,15 @@ function localLoad(){
   // Compatibilidad — ahora init() maneja la carga
   cart=JSON.parse(localStorage.getItem("lx_cart")||"[]");
 }
+let _savingProducts=false;
 function saveProducts(){
   localStorage.setItem("lx_products",JSON.stringify(products));
-  if(window._fb && window._fb.ready()) window._fb.saveProducts(products);
+  if(window._fb && window._fb.ready()){
+    _savingProducts=true;
+    window._fb.saveProducts(products).then(()=>{
+      setTimeout(()=>{_savingProducts=false;},2000);
+    }).catch(()=>{_savingProducts=false;});
+  }
 }
 function saveOrders(){
   localStorage.setItem("lx_orders",JSON.stringify(orders));
@@ -1136,11 +1195,13 @@ function init(){
       if(qp2) targetSlug = toSlug(qp2);
     }
     if(!targetSlug) return;
+
     function doHighlight(){
       const found = products.find(p => toSlug(p.name) === targetSlug);
       if(!found) return;
       openProductDetail(found.id);
     }
+
     if(products.length > 0){
       doHighlight();
     } else {
@@ -1154,6 +1215,7 @@ function init(){
   // Escuchar cambios en tiempo real (para todos los visitantes)
   if(window._fb && window._fb.ready()){
     window._fb.watchProducts(arr=>{
+      if(_savingProducts) return; // evitar sobreescritura durante guardado
       products=arr;
       sortProductsAZ();
       localStorage.setItem("lx_products",JSON.stringify(products));
@@ -2002,7 +2064,7 @@ function updateFbStatusBadge(){
 }
 
 function saveStoreSettings(){
-  storeSettings.name=document.getElementById("settingName").value.trim()||"DS DISTRIBUIDORA SAN FRANCISCO NO.3";
+  storeSettings.name=document.getElementById("settingName").value.trim()||"DS Distribuidora San Francisco";
   storeSettings.desc=document.getElementById("settingDesc").value.trim();
   storeSettings.waNumber=document.getElementById("settingWA").value.trim();
   storeSettings.credentials=document.getElementById("settingCreds").value.trim()||"distribuidora:genesis2024";
@@ -2056,7 +2118,7 @@ function renderShippingZones(){
 
 function openQuote(){
   if(!cart.length){toast("El carrito está vacío","error");return;}
-  document.getElementById("quoteStoreName").textContent=storeSettings.name||"DS DISTRIBUIDORA SAN FRANCISCO NO.3";
+  document.getElementById("quoteStoreName").textContent=storeSettings.name||"DS Distribuidora San Francisco";
   document.getElementById("quoteDate").textContent=new Date().toLocaleDateString("es-GT",{year:"numeric",month:"long",day:"numeric"});
 
   const esMayoreo=mayoreoMode&&mayoreoTipo&&mayoreoTipo!=="publico";
@@ -2078,7 +2140,7 @@ function openQuote(){
 }
 function printQuote(){window.print();}
 function shareQuoteWhatsApp(){
-  const wa=storeSettings.waNumber, name=storeSettings.name||"DS DISTRIBUIDORA SAN FRANCISCO NO.3";
+  const wa=storeSettings.waNumber, name=storeSettings.name||"DS Distribuidora San Francisco";
   const esMayoreo=mayoreoMode&&mayoreoTipo&&mayoreoTipo!=="publico";
   const labelActivo=esMayoreo?(MAYOREO_SUB_TIPOS[mayoreoTipo]?.label||mayoreoTipo):"Público";
   const client=document.getElementById("quoteClient").value;
@@ -2595,6 +2657,36 @@ function toSlug(str){
     .replace(/-+/g,"-");
 }
 
+function shareProduct(id, event) {
+  event.stopPropagation();
+  const p = products.find(x => x.id === id);
+  if (!p) return;
+  const slug = toSlug(p.name);
+  const url = window.location.origin + "/" + slug;
+  const shareData = {
+    title: p.name,
+    text: p.name + " - Q" + (p.price||0).toFixed(2),
+    url: url
+  };
+  const showSharePopup = (msg) => {
+    const popup = document.getElementById('sharePopup');
+    if (!popup) return;
+    popup.textContent = msg;
+    popup.classList.add('show');
+    clearTimeout(_sharePopupTimer);
+    _sharePopupTimer = setTimeout(() => popup.classList.remove('show'), 2500);
+  };
+  if (navigator.share) {
+    navigator.share(shareData).catch(() => {});
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(() => showSharePopup('🔗 Enlace copiado al portapapeles'));
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = url; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    showSharePopup('🔗 Enlace copiado al portapapeles');
+  }
+}
+
 // Init manejado por el módulo Firebase arriba
 </script>
 <div id="sharePopup" class="share-popup"></div>
@@ -2636,7 +2728,7 @@ function toSlug(str){
   letter-spacing: 0.3px;
   margin-top: 2rem;
 ">
-  © 2026 DS DISTRIBUIDORA SAN FRANCISCO NO.3 &nbsp;–&nbsp; Todos Los Derechos Reservados
+  © 2026 DS DISTRIBUIDORA SAN FRANCISCO &nbsp;–&nbsp; Todos Los Derechos Reservados
 </footer>
 
 </body>
