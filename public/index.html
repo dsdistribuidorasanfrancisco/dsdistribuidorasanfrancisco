@@ -149,6 +149,21 @@ window._fb = {
     if (!fbReady) return;
     await set(ref(db, "settings"), settings);
   },
+
+  // Geodata: lugares, municipios, departamentos
+  watchGeoData: (cb) => {
+    if (!fbReady) return;
+    onValue(ref(db, "geodata"), snap => { const d=snap.val(); if(d) cb(d); });
+  },
+  saveGeoData: async (data) => {
+    if (!fbReady) return;
+    await set(ref(db, "geodata"), data);
+  },
+  getGeoData: async () => {
+    if (!fbReady) return null;
+    const snap = await get(ref(db, "geodata"));
+    return snap.val();
+  },
 };
 
 // ── Disparar init cuando Firebase esté listo ──────────────────
@@ -159,8 +174,9 @@ document.addEventListener("DOMContentLoaded", () => {
     Promise.all([
       get(ref(db, "products")),
       get(ref(db, "orders")),
-      get(ref(db, "settings"))
-    ]).then(([pSnap, oSnap, sSnap]) => {
+      get(ref(db, "settings")),
+      get(ref(db, "geodata"))
+    ]).then(([pSnap, oSnap, sSnap, gSnap]) => {
       if (pSnap.val()) {
         window._fbInitProducts = Object.entries(pSnap.val()).map(([k,v])=>({_key:k,...v}));
       }
@@ -169,6 +185,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       if (sSnap.val()) {
         window._fbInitSettings = sSnap.val();
+      }
+      if (gSnap.val()) {
+        window._fbInitGeoData = gSnap.val();
       }
       setTimeout(() => window._appInit && window._appInit(), 100);
     }).catch(err => {
@@ -765,6 +784,7 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
     <button class="admin-tab" onclick="switchAdminTab('orders',this)">Pedidos</button>
     <button class="admin-tab" onclick="switchAdminTab('store',this)">Tienda</button>
     <button class="admin-tab" onclick="switchAdminTab('shipping',this)">Envios</button>
+    <button class="admin-tab" onclick="switchAdminTab('aldeas',this)">🗺️ Geodata</button>
   </div>
   <div class="admin-panel active" id="panel-dashboard">
     <div class="stats-grid" id="adminStats"></div>
@@ -917,13 +937,16 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
             <div class="form-group"><label>Nombre de la tienda *</label><input type="text" id="psNombre" placeholder="Ej: Sucursal Central, Tienda Norte..."></div>
             <div class="form-group"><label>Dirección *</label><input type="text" id="psDireccion" placeholder="Ej: 5a Av. 10-20 Zona 1, Guatemala"></div>
             <div class="form-group">
-              <label>Departamento</label>
-              <select id="psDept" onchange="loadPsMunicipios()" style="width:100%"><option value="">Selecciona departamento</option></select>
+              <label>Lugar <span style="font-size:0.78rem;font-weight:400;color:var(--text-muted)">(opcional)</span></label>
+              <select id="psAldea" style="width:100%"><option value="">Todo el municipio</option></select>
             </div>
             <div class="form-group">
-              <label>Municipios donde los clientes pueden recoger *</label>
-              <div id="psMunicipiosList" style="margin-top:0.3rem"><p style="color:var(--text-muted);font-size:0.88rem">Selecciona un departamento primero</p></div>
-              <button type="button" class="btn btn-ghost" style="margin-top:0.6rem;font-size:0.82rem;padding:0.4rem 0.8rem" onclick="selectAllPsMunicipios()">Seleccionar todos</button>
+              <label>Municipio *</label>
+              <select id="psMun" onchange="loadPsAldeaSelect()" style="width:100%"><option value="">Selecciona un departamento</option></select>
+            </div>
+            <div class="form-group">
+              <label>Departamento</label>
+              <select id="psDept" onchange="loadPsMunicipiosSelect()" style="width:100%"><option value="">Selecciona departamento</option></select>
             </div>
             <button class="btn btn-primary" onclick="addPickupStore()">+ Agregar Tienda</button>
           </div>
@@ -950,8 +973,9 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
     <div class="settings-card">
       <h4>Costo de Envío por Municipio</h4>
       <div style="display:flex;gap:0.8rem;flex-wrap:wrap;margin-bottom:1.5rem;align-items:flex-end">
+        <div class="form-group" style="margin:0;flex:1;min-width:160px"><label>Lugar <span style="font-size:0.78rem;font-weight:400;color:var(--text-muted)">(opcional)</span></label><select id="shippingAldea" style="width:100%"><option value="">Todo el municipio</option></select></div>
+        <div class="form-group" style="margin:0;flex:1;min-width:140px"><label>Municipio</label><select id="shippingMun" onchange="onShippingMunChange()" style="width:100%"><option value="">Selecciona dept.</option></select></div>
         <div class="form-group" style="margin:0;flex:1;min-width:140px"><label>Departamento</label><select id="shippingDept" onchange="onShippingDeptChange()" style="width:100%"><option value="">Selecciona</option></select></div>
-        <div class="form-group" style="margin:0;flex:1;min-width:140px"><label>Municipio</label><select id="shippingMun" style="width:100%"><option value="">Selecciona dept.</option></select></div>
         <div class="form-group" style="margin:0;flex:1;min-width:100px"><label>Costo Q</label><input type="number" id="shippingCost" min="0" step="1" placeholder="0"></div>
         <button class="btn btn-primary" onclick="addShippingZone()" style="width:100%; margin-top:0.5rem">+ Agregar Zona</button>
       </div>
@@ -962,6 +986,48 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
       </div>
       <button class="btn btn-save" onclick="saveShippingCost()">Guardar Configuración General</button>
       <div id="shippingZonesList" style="margin-top:2rem"></div>
+    </div>
+  </div>
+  <div class="admin-panel" id="panel-aldeas">
+    <div class="settings-card">
+      <h4>🗺️ Gestionar Geodata (Lugar / Municipio / Depto)</h4>
+      <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:1.2rem">
+        Sube un CSV para agregar lugares, municipios y departamentos.
+        Se guardan en <strong>Firebase</strong> y todos los clientes los verán al instante.
+      </p>
+
+      <div style="background:#f0f9ff;border:1px solid #bae0fd;border-radius:var(--radius-sm);padding:1rem;margin-bottom:1.4rem">
+        <div style="font-weight:700;font-size:0.85rem;margin-bottom:0.4rem;color:#0369a1">📋 Formato del CSV — 3 columnas</div>
+        <p style="font-size:0.82rem;color:#0369a1;margin:0 0 0.5rem">
+          <strong>lugar, municipio, departamento</strong><br>
+                  </p>
+        <code style="font-size:0.8rem;color:#075985;display:block;line-height:1.9;background:#e0f2fe;padding:0.5rem;border-radius:4px">
+          lugar,municipio,departamento<br>
+          Xeaj,San Francisco La Unión,Quetzaltenango<br>
+          Lo de Bran,Mixco,Guatemala<br>
+          El Tejar,Chimaltenango,Chimaltenango<br>
+          El Rancho,Chiantla,Huehuetenango<br>
+          Chamché,Cobán,Alta Verapaz
+        </code>
+        <button class="btn btn-ghost" style="margin-top:0.8rem;font-size:0.8rem;padding:0.4rem 0.9rem" onclick="downloadAldeaTemplate()">⬇ Descargar plantilla CSV</button>
+      </div>
+
+      <div style="border:2px dashed var(--border);border-radius:var(--radius-sm);padding:1.5rem;text-align:center;margin-bottom:1.2rem">
+        <div style="font-size:2rem;margin-bottom:0.5rem">📂</div>
+        <div style="font-weight:600;margin-bottom:0.4rem">Subir archivo CSV</div>
+        <div style="color:var(--text-muted);font-size:0.83rem;margin-bottom:1rem">Arrastra aquí o haz clic para seleccionar</div>
+        <input type="file" id="aldeaCsvInput" accept=".csv" style="display:none" onchange="handleAldeaCsv(this)">
+        <button class="btn btn-primary" style="font-size:0.85rem" onclick="document.getElementById('aldeaCsvInput').click()">Seleccionar CSV</button>
+      </div>
+
+      <div id="aldeaCsvStatus" style="display:none;margin-bottom:1rem"></div>
+      <div id="aldeaCurrentStats" style="margin-bottom:1.2rem"></div>
+
+      <div style="display:flex;gap:0.8rem;flex-wrap:wrap">
+        <button class="btn btn-save" onclick="saveAldeaData()" id="btnSaveAldeas" style="display:none">☁️ Guardar en Firebase</button>
+        <button class="btn btn-ghost" onclick="exportAldeaData()">⬇ Exportar geodata CSV</button>
+        <button class="btn btn-ghost" style="color:#e11d48;border-color:#fecdd3" onclick="clearAldeaData()">🗑 Borrar toda la geodata</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1029,8 +1095,9 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
     <h3>Confirmar Pedido</h3>
     <div class="form-group"><label>Nombre Completo *</label><input type="text" id="buyerName" placeholder="Tu nombre completo"></div>
     <div class="form-group"><label>Contacto (teléfono o email) *</label><input type="text" id="buyerContact" placeholder="5555-1234"></div>
+    <div class="form-group"><label>Lugar <span style="font-size:0.78rem;font-weight:400;color:var(--text-muted)">(opcional)</span></label><select id="buyerAldea" onchange="updateCheckoutTotal()" style="width:100%"><option value="">Todo el municipio / Cabecera</option></select></div>
+    <div class="form-group"><label>Municipio *</label><select id="buyerMun" onchange="onBuyerMunChange()"><option value="">Selecciona dept. primero</option></select></div>
     <div class="form-group"><label>Departamento *</label><select id="buyerDept" onchange="loadMunicipios()"><option value="">Selecciona</option></select></div>
-    <div class="form-group"><label>Municipio *</label><select id="buyerMun" onchange="renderCheckoutPaymentMethods();updateCheckoutTotal()"><option value="">Selecciona dept. primero</option></select></div>
     <div class="form-group"><label>Dirección (opcional)</label><input type="text" id="buyerAddress" placeholder="Calle, colonia, referencia..."></div>
     <div class="form-group"><label>Notas (opcional)</label><textarea id="buyerNotes" placeholder="Instrucciones especiales..."></textarea></div>
     <div id="checkoutItemsDiv" class="checkout-items-summary"></div>
@@ -1088,7 +1155,10 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
 <div class="toast" id="toast"></div>
 
 <script>
-const GT_DATA = {"Guatemala": ["Guatemala", "Santa Catarina Pinula", "San José Pinula", "Chuarrancho", "Fraijanes", "Amatitlán", "Mixco", "Petapa", "San Juan Sacatepéquez", "San Raimundo", "Chinautla", "San Pedro Ayampuc", "Palencia", "San Miguel Petapa", "Villa Nueva", "Villa Canales", "Pueblo Nuevo Viñas", "San Pedro Sacatepéquez", "San Pablo Jocopilas", "Ulloa"], "El Progreso": ["Guastatoya", "Morazán", "San Agustín Acasaguastlán", "San Cristóbal Acasaguastlán", "El Jícaro", "Sansare", "Sanarate", "San Antonio La Paz"], "Sacatepéquez": ["Antigua Guatemala", "Jocotenango", "Pastores", "Sumpango", "Santo Domingo Xenacoj", "Santiago Sacatepéquez", "San Bartolomé Milpas Altas", "San Lucas Sacatepéquez", "Santa Lucía Milpas Altas", "Magdalena Milpas Altas", "Santa María de Jesús", "Ciudad Vieja", "San Miguel Dueñas", "Alotenango", "San Antonio Aguas Calientes", "Santa Catarina Barahona"], "Chimaltenango": ["Chimaltenango", "San José Poaquil", "San Martín Jilotepeque", "Comalapa", "Santa Apolonia", "Tecpán Guatemala", "Patzún", "Pochuta", "Patzicía", "Santa Cruz Balanyá", "Acatenango", "Yepocapa", "San Andrés Itzapa", "Parramos", "Zaragoza", "El Tejar"], "Escuintla": ["Escuintla", "Santa Lucía Cotzumalguapa", "La Democracia", "Siquinalá", "Masagua", "Tiquisate", "La Gomera", "Guanagazapa", "San José", "Iztapa", "Palín", "San Vicente Pacaya", "Nueva Concepción", "Taxisco"], "Santa Rosa": ["Cuilapa", "Barberena", "Santa Rosa de Lima", "Casillas", "San Rafael Las Flores", "Oratorio", "San Juan Tecuaco", "Chiquimulilla", "Taxisco", "Santa María Ixhuatán", "Guazacapán", "Santa Cruz Naranjo", "Pueblo Nuevo Viñas", "Nueva Santa Rosa"], "Sololá": ["Sololá", "San José Chacayá", "Santa María Visitación", "Santa Lucía Utatlán", "Nahualá", "Santa Catarina Ixtahuacán", "Santa Clara La Laguna", "Concepción", "San Andrés Semetabaj", "Panajachel", "Santa Catarina Palopó", "San Antonio Palopó", "San Lucas Tolimán", "Santa Cruz La Laguna", "San Pablo La Laguna", "San Marcos La Laguna", "San Juan La Laguna", "San Pedro La Laguna", "Santiago Atitlán"], "Totonicapán": ["Totonicapán", "San Cristóbal Totonicapán", "San Francisco El Alto", "San Andrés Xecul", "Momostenango", "Santa María Chiquimula", "Santa Lucía La Reforma", "San Bartolo Aguas Calientes"], "Quetzaltenango": ["Quetzaltenango", "Salcajá", "Olintepeque", "San Carlos Sija", "Sibilia", "Cabricán", "Cajolá", "San Miguel Sigüilá", "Ostuncalco", "San Mateo", "Concepción Chiquirichapa", "San Martín Sacatepéquez", "Almolonga", "Cantel", "Huitán", "Zunil", "Colomba Costa Cuca", "San Francisco La Unión", "El Palmar", "Coatepeque", "Génova", "Flores Costa Cuca", "La Esperanza", "Palestina de Los Altos"], "Suchitepéquez": ["Mazatenango", "Cuyotenango", "San Francisco Zapotitlán", "San Bernardino", "San José El Ídolo", "Santo Domingo Suchitepéquez", "San Lorenzo", "Samayac", "San Pablo Jocopilas", "San Antonio Suchitepéquez", "San Miguel Panán", "San Gabriel", "Chicacao", "Patulul", "Santa Bárbara", "San Juan Bautista", "Santo Tomás La Unión", "Zunilito", "Pueblo Nuevo", "Río Bravo", "San José La Máquina"], "Retalhuleu": ["Retalhuleu", "San Sebastián", "Santa Cruz Muluá", "San Martín Zapotitlán", "San Felipe", "San Andrés Villa Seca", "Champerico", "Nuevo San Carlos", "El Asintal"], "San Marcos": ["San Marcos", "San Pedro Sacatepéquez", "San Antonio Sacatepéquez", "Comitancillo", "San Miguel Ixtahuacán", "Concepción Tutuapa", "Tacaná", "Sibinal", "Tajumulco", "Tejutla", "San Rafael Pie de la Cuesta", "Nuevo Progreso", "El Tumbador", "El Rodeo", "Malacatán", "Catarina", "Ayutla", "Ocós", "San Pablo", "El Quetzal", "La Reforma", "Pajapita", "Ixchiguán", "San José Ojetenam", "San Cristóbal Cucho", "Sipacapa", "Esquipulas Palo Gordo", "Río Blanco", "San Lorenzo"], "Huehuetenango": ["Huehuetenango", "Chiantla", "Malacatancito", "Cuilco", "Nentón", "San Pedro Necta", "Jacaltenango", "Soloma", "Ilotenango", "Santa Bárbara", "La Libertad", "La Democracia", "San Miguel Acatán", "San Rafael La Independencia", "Todos Santos Cuchumatán", "San Juan Atitán", "Santa Eulalia", "San Mateo Ixtatán", "Colotenango", "San Sebastián Huehuetenango", "Tectitán", "Concepción Huista", "San Juan Ixcoy", "San Antonio Huista", "San Sebastián Coatán", "Santa Cruz Barillas", "Aguacatán", "San Rafael Petzal", "San Gaspar Ixchil", "Santiago Chimaltenango", "Santa Ana Huista"], "Quiché": ["Santa Cruz del Quiché", "Chiché", "Chinique", "Zacualpa", "Chajul", "Chichicastenango", "Patzité", "San Antonio Ilotenango", "San Pedro Jocopilas", "Cunén", "San Juan Cotzal", "Joyabaj", "Nebaj", "San Andrés Sajcabajá", "Uspantán", "Sacapulas", "San Bartolomé Jocotenango", "Canillá", "Chicamán", "Ixcán", "Pachalum"], "Baja Verapaz": ["Salamá", "San Miguel Chicaj", "Rabinal", "Cubulco", "Granados", "El Chol", "San Jerónimo", "Purulhá"], "Alta Verapaz": ["Cobán", "Santa Cruz Verapaz", "San Cristóbal Verapaz", "Tactic", "Tamahú", "Tucurú", "Panzós", "Senahú", "San Pedro Carchá", "San Juan Chamelco", "Lanquín", "Santa María Cahabón", "Chisec", "Chahal", "Fray Bartolomé de Las Casas", "Santa Catalina La Tinta", "Raxruhá"], "Petén": ["Flores", "San José", "San Benito", "San Andrés", "La Libertad", "San Francisco", "Santa Ana", "Dolores", "San Luis", "Sayaxché", "Melchor de Mencos", "Poptún", "Las Cruces", "El Chal"], "Izabal": ["Puerto Barrios", "Livingston", "El Estor", "Morales", "Los Amates"], "Zacapa": ["Zacapa", "Estanzuela", "Río Hondo", "Gualán", "Teculután", "Usumatlán", "Cabañas", "San Jorge", "Huité", "La Unión"], "Chiquimula": ["Chiquimula", "San José La Arada", "San Juan Ermita", "Jocotán", "Camotán", "Olopa", "Esquipulas", "Concepción Las Minas", "Quezaltepeque", "San Jacinto", "Ipala"], "Jalapa": ["Jalapa", "San Pedro Pinula", "San Luis Jilotepeque", "San Manuel Chaparrón", "San Carlos Alzatate", "Monjas", "Mataquescuintla", "San Miguel Las Flores"], "Jutiapa": ["Jutiapa", "El Progreso", "Santa Catarina Mita", "Agua Blanca", "Asunción Mita", "Yupiltepeque", "Atescatempa", "Jerez", "El Adelanto", "Zapotitlán", "Comapa", "Jalpatagua", "Conguaco", "Moyuta", "Pasaco", "San José Acatempa", "Quesada"]};
+let GT_DATA = {};
+
+let GT_ALDEAS = {};
+
 
 let products=[], orders=[], cart=[];
 let editingId=null, loggedIn=false, currentPage=1;
@@ -1234,7 +1304,16 @@ function init(){
     });
   }
 }
-window._appInit = init;
+window._appInit = function(){
+  // Cargar geodata desde Firebase
+  if(window._fbInitGeoData){
+    const g=window._fbInitGeoData;
+    if(g.departamentos) GT_DATA=g.departamentos;
+    if(g.aldeas) GT_ALDEAS=g.aldeas;
+    populateDeptSelects();
+  }
+  init();
+};
 
 function applyStoreSettings(){
   const s=storeSettings;
@@ -1502,14 +1581,18 @@ function openCheckout(){
   updateCheckoutTotal();
   document.getElementById("checkoutModal").classList.add("open");
 }
-function getShippingCost(dept,mun){
-  const s=storeSettings, key=dept+"|"+mun;
-  if(s.shippingZones&&s.shippingZones[key]!==undefined) return s.shippingZones[key];
+function getShippingCost(dept,mun,aldea){
+  const s=storeSettings;
+  if(s.shippingZones){
+    if(aldea){const k3=dept+"|"+mun+"|"+aldea;if(s.shippingZones[k3]!==undefined)return s.shippingZones[k3];}
+    const k2=dept+"|"+mun;if(s.shippingZones[k2]!==undefined)return s.shippingZones[k2];
+  }
   return s.defaultShipping??25;
 }
 function updateCheckoutTotal(){
   const subtotal=cart.reduce((s,ci)=>{const p=products.find(x=>x.id===ci.id);return s+(p?getPrecioProducto(p)*ci.qty:0);},0);
   const dept=document.getElementById("buyerDept")?.value||"", mun=document.getElementById("buyerMun")?.value||"";
+  const aldea=document.getElementById("buyerAldea")?.value||"";
   const threshold=storeSettings.freeShippingAt??300;
   const freeBadge=document.getElementById("freeShippingBadge"), shipDisplay=document.getElementById("shippingCostDisplay");
   const selectedPaymentRadio=document.querySelector("input[name=paymentMethod]:checked");
@@ -1522,7 +1605,7 @@ function updateCheckoutTotal(){
     freeBadge.style.display="block";
     shipDisplay.textContent="¡Envío gratis aplicado!";
   } else {
-    shipping=(dept&&mun)?getShippingCost(dept,mun):(storeSettings.defaultShipping??25);
+    shipping=(dept&&mun)?getShippingCost(dept,mun,aldea):(storeSettings.defaultShipping??25);
     freeBadge.style.display="none";
     shipDisplay.textContent="Costo de envío estimado: Q"+shipping.toFixed(2);
   }
@@ -1535,6 +1618,16 @@ function loadMunicipios(){
   const munSel=document.getElementById("buyerMun");
   munSel.innerHTML="<option value=''>Selecciona municipio</option>";
   if(dept&&GT_DATA[dept]) GT_DATA[dept].forEach(m=>{const o=document.createElement("option");o.value=m;o.textContent=m;munSel.appendChild(o);});
+  const asel=document.getElementById("buyerAldea");if(asel){asel.innerHTML="<option value=''>Todo el municipio / Cabecera</option>";}
+  renderCheckoutPaymentMethods();
+  updateCheckoutTotal();
+}
+function onBuyerMunChange(){
+  const dept=document.getElementById("buyerDept")?.value||"", mun=document.getElementById("buyerMun")?.value||"";
+  const asel=document.getElementById("buyerAldea"); if(!asel)return;
+  asel.innerHTML="<option value=''>Todo el municipio / Cabecera</option>";
+  const aldeas=(GT_ALDEAS[dept]&&GT_ALDEAS[dept][mun])||[];
+  aldeas.forEach(a=>{const o=document.createElement("option");o.value=a;o.textContent=a;asel.appendChild(o);});
   renderCheckoutPaymentMethods();
   updateCheckoutTotal();
 }
@@ -1551,7 +1644,7 @@ function placeOrder(){
   // Pickup store validation
   let pickupStore=null;
   if(selectedPayment.key==="pickup"){
-    const stores=(storeSettings.pickupStores||[]).filter(s=>s.municipios&&s.municipios.includes(dept+"|"+mun));
+    const stores=(storeSettings.pickupStores||[]).filter(s=>s.municipios&&s.municipios.some(key=>{const parts=key.split("|");return parts[0]===dept&&parts[1]===mun;}));
     if(!stores.length){toast("No hay tienda disponible para este municipio","error");return;}
     const pickupSel=document.getElementById("pickupStoreSelect");
     const storeId=pickupSel?pickupSel.value:stores[0].id;
@@ -1665,6 +1758,7 @@ function switchAdminTab(tab,el){
   if(tab==="orders") renderAdminOrders();
   if(tab==="store"){updateFbStatusBadge&&updateFbStatusBadge();populateDeptSelects();applyStoreSettings();}
   if(tab==="shipping"){populateDeptSelects();renderShippingZones();}
+  if(tab==="aldeas") renderAldeaStats();
 }
 
 function renderAdminDashboard(){
@@ -2088,17 +2182,27 @@ function onShippingDeptChange(){
   const dept=document.getElementById("shippingDept").value, sel=document.getElementById("shippingMun");
   sel.innerHTML="<option value=''>Selecciona municipio</option>";
   if(dept&&GT_DATA[dept]) GT_DATA[dept].forEach(m=>{const o=document.createElement("option");o.value=m;o.textContent=m;sel.appendChild(o);});
+  const asel=document.getElementById("shippingAldea"); if(asel){asel.innerHTML="<option value=''>Todo el municipio</option>";}
+}
+function onShippingMunChange(){
+  const dept=document.getElementById("shippingDept").value, mun=document.getElementById("shippingMun").value;
+  const asel=document.getElementById("shippingAldea"); if(!asel)return;
+  asel.innerHTML="<option value=''>Todo el municipio</option>";
+  const aldeas=(GT_ALDEAS[dept]&&GT_ALDEAS[dept][mun])||[];
+  aldeas.forEach(a=>{const o=document.createElement("option");o.value=a;o.textContent=a;asel.appendChild(o);});
 }
 function addShippingZone(){
   const dept=document.getElementById("shippingDept").value, mun=document.getElementById("shippingMun").value;
+  const aldea=(document.getElementById("shippingAldea")?.value||"").trim();
   const cost=parseFloat(document.getElementById("shippingCost").value);
   if(!dept||!mun||isNaN(cost)){toast("Completa todos los campos","error");return;}
   if(!storeSettings.shippingZones) storeSettings.shippingZones={};
-  storeSettings.shippingZones[dept+"|"+mun]=cost;
+  const key=aldea?dept+"|"+mun+"|"+aldea:dept+"|"+mun;
+  storeSettings.shippingZones[key]=cost;
   saveSettings(); renderShippingZones(); toast("Zona agregada","success");
 }
-function removeShippingZone(dept,mun){
-  delete storeSettings.shippingZones[dept+"|"+mun]; saveSettings(); renderShippingZones();
+function removeShippingZone(key){
+  delete storeSettings.shippingZones[key]; saveSettings(); renderShippingZones();
 }
 function saveShippingCost(){
   const def=parseFloat(document.getElementById("defaultShippingCost").value);
@@ -2111,8 +2215,8 @@ function renderShippingZones(){
   const cont=document.getElementById("shippingZonesList"); if(!cont)return;
   const zones=storeSettings.shippingZones||{}, entries=Object.entries(zones);
   if(!entries.length){cont.innerHTML="<p style='font-size:0.95rem;color:var(--text-muted)'>Sin zonas especiales configuradas.</p>";return;}
-  cont.innerHTML="<table class='admin-table'><thead><tr><th>Departamento</th><th>Municipio</th><th>Costo</th><th>Acción</th></tr></thead><tbody>"+
-    entries.map(([k,v])=>{const[d,m]=k.split("|");return"<tr><td>"+d+"</td><td>"+m+"</td><td><strong>Q"+v+"</strong></td><td><button class='btn-del' onclick='removeShippingZone(\""+d+"\",\""+m+"\")'>Quitar</button></td></tr>";}).join("")+
+  cont.innerHTML="<table class='admin-table'><thead><tr><th>Lugar</th><th>Municipio</th><th>Departamento</th><th>Costo</th><th>Acción</th></tr></thead><tbody>"+
+    entries.map(([k,v])=>{const parts=k.split("|");const d=parts[0],m=parts[1],a=parts[2]||"";return"<tr><td>"+(a?"<span style='background:var(--green-soft);color:#065f46;border-radius:100px;padding:0.2rem 0.6rem;font-size:0.8rem;font-weight:700'>"+a+"</span>":"<span style='color:var(--text-muted);font-size:0.85rem'>—</span>")+"</td><td>"+m+"</td><td>"+d+"</td><td><strong>Q"+v+"</strong></td><td><button class='btn-del' onclick='removeShippingZone(\""+k+"\")'>Quitar</button></td></tr>";}).join("")+
   "</tbody></table>";
 }
 
@@ -2335,7 +2439,7 @@ function renderCheckoutPaymentMethods(){
     if(!v.enabled) return false;
     if(k==="pickup"){
       const stores=storeSettings.pickupStores||[];
-      return stores.some(s=>s.municipios&&s.municipios.includes(dept+"|"+mun));
+      return stores.some(s=>s.municipios&&s.municipios.some(key=>{const parts=key.split("|");return parts[0]===dept&&parts[1]===mun;}));
     }
     return true;
   });
@@ -2346,7 +2450,7 @@ function renderCheckoutPaymentMethods(){
   cont.innerHTML=active.map(([k,v],i)=>{
     let extra="";
     if(k==="pickup"){
-      const stores=(storeSettings.pickupStores||[]).filter(s=>s.municipios&&s.municipios.includes(dept+"|"+mun));
+      const stores=(storeSettings.pickupStores||[]).filter(s=>s.municipios&&s.municipios.some(key=>{const parts=key.split("|");return parts[0]===dept&&parts[1]===mun;}));
       if(stores.length>1){
         extra="<div style='margin-top:0.8rem'><label style='font-size:0.85rem;font-weight:600;color:var(--dark);display:block;margin-bottom:0.4rem'>Selecciona la tienda de recogida:</label>"+
           "<select id='pickupStoreSelect' onchange='updateCheckoutTotal()' style='width:100%;padding:0.7rem;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:0.9rem;font-family:inherit'>"+
@@ -2399,7 +2503,11 @@ function renderPickupStoresAdmin(){
   }
   cont.innerHTML=stores.map(s=>{
     const munLabels=(s.municipios||[]).map(k=>{
-      const [d,m]=k.split("|"); return d&&m?"<span style='display:inline-block;background:var(--bg);border:1px solid var(--border);border-radius:100px;padding:0.2rem 0.6rem;font-size:0.78rem;font-weight:600;margin:0.2rem'>"+d+" — "+m+"</span>":"";
+      const parts=k.split("|");const d=parts[0],m=parts[1],a=parts[2]||"";
+      if(!d||!m)return"";
+      const label=a?"📍 "+a+", "+m+", "+d:"🏙️ "+m+", "+d;
+      const bg=a?"background:var(--green-soft);color:#065f46":"background:var(--bg);color:var(--dark)";
+      return "<span style='display:inline-block;"+bg+";border:1px solid var(--border);border-radius:100px;padding:0.2rem 0.7rem;font-size:0.78rem;font-weight:600;margin:0.2rem'>"+label+"</span>";
     }).join("");
     return "<div style='background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-md);padding:1.2rem;margin-bottom:1rem'>"+
       "<div style='display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:0.5rem;margin-bottom:0.8rem'>"+
@@ -2407,7 +2515,7 @@ function renderPickupStoresAdmin(){
         "<div style='font-size:0.88rem;color:var(--text-muted);margin-top:0.2rem'>📍 "+s.direccion+"</div></div>"+
         "<button class='btn btn-danger' style='padding:0.4rem 0.9rem;font-size:0.85rem' onclick='deletePickupStore(\""+s.id+"\")'>Eliminar</button>"+
       "</div>"+
-      "<div style='font-size:0.82rem;font-weight:700;color:var(--text-muted);margin-bottom:0.4rem;text-transform:uppercase;letter-spacing:0.5px'>Municipios habilitados:</div>"+
+      "<div style='font-size:0.82rem;font-weight:700;color:var(--text-muted);margin-bottom:0.4rem;text-transform:uppercase;letter-spacing:0.5px'>Municipios / Aldeas habilitados:</div>"+
       "<div>"+munLabels+"</div>"+
     "</div>";
   }).join("");
@@ -2417,15 +2525,19 @@ function addPickupStore(){
   const nombre=document.getElementById("psNombre")?.value.trim();
   const dir=document.getElementById("psDireccion")?.value.trim();
   const dept=document.getElementById("psDept")?.value;
-  const checked=[...document.querySelectorAll(".ps-mun-check:checked")].map(cb=>cb.value);
+  const mun=document.getElementById("psMun")?.value;
+  const aldea=document.getElementById("psAldea")?.value;
   if(!nombre||!dir){toast("Ingresa nombre y dirección de la tienda","error");return;}
-  if(!checked.length){toast("Selecciona al menos un municipio","error");return;}
+  if(!dept||!mun){toast("Selecciona departamento y municipio","error");return;}
+  const key=aldea?dept+"|"+mun+"|"+aldea:dept+"|"+mun;
   if(!storeSettings.pickupStores) storeSettings.pickupStores=[];
-  storeSettings.pickupStores.push({id:"ps_"+Date.now(),nombre,direccion:dir,municipios:checked});
+  storeSettings.pickupStores.push({id:"ps_"+Date.now(),nombre,direccion:dir,municipios:[key]});
   saveSettings();
   document.getElementById("psNombre").value="";
   document.getElementById("psDireccion").value="";
-  document.querySelectorAll(".ps-mun-check").forEach(cb=>cb.checked=false);
+  document.getElementById("psDept").value="";
+  document.getElementById("psMun").innerHTML="<option value=''>Selecciona un departamento</option>";
+  document.getElementById("psAldea").innerHTML="<option value=''>Todo el municipio</option>";
   renderPickupStoresAdmin();
   toast("Tienda agregada","success");
 }
@@ -2437,22 +2549,26 @@ function deletePickupStore(id){
   toast("Tienda eliminada","success");
 }
 
-function loadPsMunicipios(){
+function loadPsMunicipiosSelect(){
   const dept=document.getElementById("psDept")?.value;
-  const cont=document.getElementById("psMunicipiosList");
-  if(!cont) return;
-  if(!dept||!GT_DATA[dept]){cont.innerHTML="<p style='color:var(--text-muted);font-size:0.88rem'>Selecciona un departamento</p>";return;}
-  cont.innerHTML="<div style='display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.5rem'>"+
-    GT_DATA[dept].map(m=>{
-      const key=dept+"|"+m;
-      return "<label style='display:flex;align-items:center;gap:0.4rem;background:var(--surface);border:1px solid var(--border);border-radius:100px;padding:0.35rem 0.8rem;cursor:pointer;font-size:0.85rem;font-weight:600'>"+
-        "<input type='checkbox' class='ps-mun-check' value='"+key+"' style='accent-color:var(--accent)'>"+m+"</label>";
-    }).join("")+
-  "</div>";
+  const munSel=document.getElementById("psMun");
+  const aldeaSel=document.getElementById("psAldea");
+  if(!munSel) return;
+  munSel.innerHTML="<option value=''>Selecciona un departamento</option>";
+  if(aldeaSel) aldeaSel.innerHTML="<option value=''>Todo el municipio</option>";
+  if(!dept||!GT_DATA[dept]) return;
+  GT_DATA[dept].forEach(m=>{const o=document.createElement("option");o.value=m;o.textContent=m;munSel.appendChild(o);});
 }
 
-function selectAllPsMunicipios(){
-  document.querySelectorAll(".ps-mun-check").forEach(cb=>cb.checked=true);
+function loadPsAldeaSelect(){
+  const dept=document.getElementById("psDept")?.value;
+  const mun=document.getElementById("psMun")?.value;
+  const aldeaSel=document.getElementById("psAldea");
+  if(!aldeaSel) return;
+  aldeaSel.innerHTML="<option value=''>Todo el municipio</option>";
+  if(!dept||!mun) return;
+  const aldeas=(GT_ALDEAS[dept]&&GT_ALDEAS[dept][mun])||[];
+  aldeas.forEach(a=>{const o=document.createElement("option");o.value=a;o.textContent=a;aldeaSel.appendChild(o);});
 }
 
 function toast(msg,type){
@@ -2688,6 +2804,152 @@ function shareProduct(id, event) {
 }
 
 // Init manejado por el módulo Firebase arriba
+
+/* ─── GEODATA CSV → FIREBASE ─── */
+function renderAldeaStats(){
+  const cont=document.getElementById("aldeaCurrentStats"); if(!cont)return;
+  const totalMuns=Object.values(GT_ALDEAS).reduce((s,d)=>s+Object.keys(d).length,0);
+  const totalA=Object.values(GT_ALDEAS).reduce((s,d)=>s+Object.values(d).reduce((a,v)=>a+v.length,0),0);
+  const totalDepts=Object.keys(GT_DATA).length;
+  const totalMunsDepts=Object.values(GT_DATA).reduce((s,v)=>s+v.length,0);
+  const fbOk=window._fb&&window._fb.ready();
+  cont.innerHTML=`<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--radius-sm);padding:0.9rem;font-size:0.85rem;line-height:2">
+    ${fbOk?'<span style="color:#16a34a">☁️ Firebase conectado</span>':'<span style="color:#f59e0b">⚠️ Sin Firebase</span>'}<br>
+    📍 <strong>${totalDepts}</strong> departamentos · <strong>${totalMunsDepts}</strong> municipios<br>
+    🏘️ <strong>${totalMuns}</strong> municipios con lugares · <strong>${totalA}</strong> lugares en total
+  </div>`;
+}
+
+function handleAldeaCsv(input){
+  const file=input.files[0]; if(!file)return;
+  window._pendingDepts={};
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const lines=e.target.result.split(/\r?\n/).filter(l=>l.trim()&&!/^lugar/i.test(l));
+    const preview={}; let ok=0,bad=0;
+    lines.forEach(line=>{
+      const parts=line.split(",").map(s=>s.trim());
+      if(parts.length<3||!parts[0]||!parts[1]||!parts[2]){bad++;return;}
+      const lugar=parts[0],mun=parts[1],dept=parts[2];
+      // 3 cols: lugar,municipio,departamento
+      if(!preview[dept]) preview[dept]={};
+      if(!preview[dept][mun]) preview[dept][mun]=[];
+      if(!preview[dept][mun].includes(lugar)){preview[dept][mun].push(lugar);ok++;}
+      if(!window._pendingDepts[dept]) window._pendingDepts[dept]=[];
+      if(!window._pendingDepts[dept].includes(mun)) window._pendingDepts[dept].push(mun);
+    });
+    const muns=Object.values(preview).reduce((s,d)=>s+Object.keys(d).length,0);
+    const status=document.getElementById("aldeaCsvStatus");
+    status.style.display="block";
+    if(ok===0){
+      status.innerHTML='<div style="background:#fff1f2;border:1px solid #fecdd3;border-radius:var(--radius-sm);padding:0.8rem;font-size:0.85rem;color:#e11d48">❌ No se encontraron filas válidas. Formato: lugar,municipio,departamento</div>';
+      return;
+    }
+    status.innerHTML=`<div style="background:#f0f9ff;border:1px solid #bae0fd;border-radius:var(--radius-sm);padding:0.8rem;font-size:0.85rem">
+      📊 Vista previa: <strong>${ok}</strong> lugares en <strong>${muns}</strong> municipios${bad?` · <span style="color:#f59e0b">${bad} filas ignoradas</span>`:""}
+    </div>`;
+    window._pendingAldeas=preview;
+    document.getElementById("btnSaveAldeas").style.display="inline-block";
+  };
+  reader.readAsText(file);
+}
+
+async function saveAldeaData(){
+  if(!window._pendingAldeas){toast("No hay datos para guardar","error");return;}
+  // Merge aldeas SIN duplicados
+  for(const dept in window._pendingAldeas){
+    if(!GT_ALDEAS[dept]) GT_ALDEAS[dept]={};
+    for(const mun in window._pendingAldeas[dept]){
+      if(!GT_ALDEAS[dept][mun]) GT_ALDEAS[dept][mun]=[];
+      window._pendingAldeas[dept][mun].forEach(a=>{
+        if(!GT_ALDEAS[dept][mun].includes(a)) GT_ALDEAS[dept][mun].push(a);
+      });
+    }
+  }
+  // Merge departamentos y municipios SIN duplicados
+  if(window._pendingDepts){
+    for(const dept in window._pendingDepts){
+      if(!GT_DATA[dept]) GT_DATA[dept]=[];
+      window._pendingDepts[dept].forEach(mun=>{
+        if(!GT_DATA[dept].includes(mun)) GT_DATA[dept].push(mun);
+      });
+    }
+    window._pendingDepts=null;
+  }
+  if(!window._fb||!window._fb.ready()){toast("Sin conexión a Firebase","error");return;}
+  try{
+    await window._fb.saveGeoData({departamentos:GT_DATA,aldeas:GT_ALDEAS});
+    populateDeptSelects();
+    window._pendingAldeas=null;
+    document.getElementById("btnSaveAldeas").style.display="none";
+    document.getElementById("aldeaCsvStatus").style.display="none";
+    document.getElementById("aldeaCsvInput").value="";
+    renderAldeaStats();
+    toast("Geodata guardada en Firebase ☁️","success");
+  }catch(e){toast("Error al guardar en Firebase","error");console.error(e);}
+}
+
+function exportAldeaData(){
+  const rows=["lugar,municipio,departamento"];
+  // Exportar aldeas/cantones/etc
+  for(const dept in GT_ALDEAS){
+    for(const mun in GT_ALDEAS[dept]){
+      (GT_ALDEAS[dept][mun]||[]).forEach(nombre=>{
+        rows.push([nombre,mun,dept].join(","));
+      });
+    }
+  }
+  // Exportar municipios que no tienen aldeas (solo están en GT_DATA)
+  for(const dept in GT_DATA){
+    (GT_DATA[dept]||[]).forEach(mun=>{
+      const tieneAldeas=GT_ALDEAS[dept]&&GT_ALDEAS[dept][mun]&&GT_ALDEAS[dept][mun].length>0;
+      // skip municipios without lugares
+    });
+  }
+  if(rows.length<=1){toast("No hay geodata para exportar","error");return;}
+  const blob=new Blob([rows.join("\n")],{type:"text/csv;charset=utf-8;"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="geodata_export_"+new Date().toISOString().slice(0,10)+".csv";
+  a.click();
+  toast("CSV exportado ✅","success");
+}
+
+async function clearAldeaData(){
+  if(!confirm("¿Borrar TODA la geodata de Firebase? Los selects quedarán vacíos para todos.")) return;
+  for(const k in GT_ALDEAS) delete GT_ALDEAS[k];
+  for(const k in GT_DATA) delete GT_DATA[k];
+  if(window._fb&&window._fb.ready()){
+    try{
+      await window._fb.saveGeoData({departamentos:{},aldeas:{}});
+      toast("Geodata borrada de Firebase","success");
+    }catch(e){toast("Error al borrar en Firebase","error");}
+  }
+  populateDeptSelects();
+  renderAldeaStats();
+}
+
+function downloadAldeaTemplate(){
+  const rows=[
+    "lugar,municipio,departamento",
+    "Guatemala,Guatemala,zona,Zona 1",
+    "Guatemala,Guatemala,zona,Zona 2",
+    "Guatemala,Guatemala,zona,Zona 3",
+    "Guatemala,Mixco,colonia,Lo de Bran",
+    "Guatemala,Mixco,colonia,Lo de Fuentes",
+    "Guatemala,Villa Nueva,aldea,Bárcenas",
+    "Chimaltenango,Chimaltenango,aldea,El Tejar",
+    "Chimaltenango,Comalapa,canton,Panimaquin",
+    "Huehuetenango,Chiantla,caseria,El Rancho",
+    "Alta Verapaz,Cobán,paraje,Chamché"
+  ];
+  const blob=new Blob([rows.join("\n")],{type:"text/csv"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="plantilla_geodata.csv";
+  a.click();
+}
+
 </script>
 <div id="sharePopup" class="share-popup"></div>
 
