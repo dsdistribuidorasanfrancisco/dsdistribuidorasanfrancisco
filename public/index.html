@@ -157,7 +157,11 @@ window._fb = {
   },
   saveGeoData: async (data) => {
     if (!fbReady) return;
-    await set(ref(db, "geodata"), data);
+    if(data===null){
+      await set(ref(db, "geodata"), null);
+    } else {
+      await set(ref(db, "geodata"), data);
+    }
   },
   getGeoData: async () => {
     if (!fbReady) return null;
@@ -2825,12 +2829,20 @@ function handleAldeaCsv(input){
   window._pendingDepts={};
   const reader=new FileReader();
   reader.onload=function(e){
-    const lines=e.target.result.split(/\r?\n/).filter(l=>l.trim()&&!/^lugar/i.test(l));
+    const lines=e.target.result.replace(/^\uFEFF/,'').split(/\r?\n/).filter(l=>l.trim()&&!/^lugar/i.test(l.trim()));
     const preview={}; let ok=0,bad=0;
     lines.forEach(line=>{
-      const parts=line.split(",").map(s=>s.trim());
-      if(parts.length<3||!parts[0]||!parts[1]||!parts[2]){bad++;return;}
-      const lugar=parts[0],mun=parts[1],dept=parts[2];
+      // Parse CSV respetando campos entre comillas
+      const cols=[];let cur="",inQ=false;
+      for(let ci=0;ci<line.length;ci++){
+        const ch=line[ci];
+        if(ch==='"'){inQ=!inQ;}
+        else if(ch===","&&!inQ){cols.push(cur.trim());cur="";}
+        else{cur+=ch;}
+      }
+      cols.push(cur.trim());
+      if(cols.length<3||!cols[0]||!cols[1]||!cols[2]){bad++;return;}
+      const lugar=cols[0].replace(/^"|"$/g,""),mun=cols[1].replace(/^"|"$/g,""),dept=cols[2].replace(/^"|"$/g,"");
       // 3 cols: lugar,municipio,departamento
       if(!preview[dept]) preview[dept]={};
       if(!preview[dept][mun]) preview[dept][mun]=[];
@@ -2886,7 +2898,7 @@ async function saveAldeaData(){
     document.getElementById("aldeaCsvInput").value="";
     renderAldeaStats();
     toast("Geodata guardada en Firebase ☁️","success");
-  }catch(e){toast("Error al guardar en Firebase","error");console.error(e);}
+  }catch(e){toast("Error al guardar: "+((e&&e.message)||String(e)),"error");console.error(e);}
 }
 
 function exportAldeaData(){
@@ -2919,29 +2931,32 @@ async function clearAldeaData(){
   if(!confirm("¿Borrar TODA la geodata de Firebase? Los selects quedarán vacíos para todos.")) return;
   for(const k in GT_ALDEAS) delete GT_ALDEAS[k];
   for(const k in GT_DATA) delete GT_DATA[k];
-  if(window._fb&&window._fb.ready()){
-    try{
-      await window._fb.saveGeoData({departamentos:{},aldeas:{}});
-      toast("Geodata borrada de Firebase","success");
-    }catch(e){toast("Error al borrar en Firebase","error");}
+  try{
+    if(window._fb&&window._fb.ready()){
+      // Usar set con null para borrar el nodo completamente en Firebase
+      await window._fb.saveGeoData(null);
+    }
+    try{ populateDeptSelects(); }catch(e2){}
+    try{ renderAldeaStats(); }catch(e3){}
+    toast("Geodata borrada ✅","success");
+  }catch(e){
+    toast("Error al borrar en Firebase","error");
+    console.error(e);
   }
-  populateDeptSelects();
-  renderAldeaStats();
 }
 
 function downloadAldeaTemplate(){
   const rows=[
     "lugar,municipio,departamento",
-    "Guatemala,Guatemala,zona,Zona 1",
-    "Guatemala,Guatemala,zona,Zona 2",
-    "Guatemala,Guatemala,zona,Zona 3",
-    "Guatemala,Mixco,colonia,Lo de Bran",
-    "Guatemala,Mixco,colonia,Lo de Fuentes",
-    "Guatemala,Villa Nueva,aldea,Bárcenas",
-    "Chimaltenango,Chimaltenango,aldea,El Tejar",
-    "Chimaltenango,Comalapa,canton,Panimaquin",
-    "Huehuetenango,Chiantla,caseria,El Rancho",
-    "Alta Verapaz,Cobán,paraje,Chamché"
+    "Xeaj,San Francisco La Unión,Quetzaltenango",
+    "Lo de Bran,Mixco,Guatemala",
+    "Lo de Fuentes,Mixco,Guatemala",
+    "Bárcenas,Villa Nueva,Guatemala",
+    "Zona 1,Guatemala,Guatemala",
+    "El Tejar,Chimaltenango,Chimaltenango",
+    "Panimaquin,Comalapa,Chimaltenango",
+    "El Rancho,Chiantla,Huehuetenango",
+    "Chamché,Cobán,Alta Verapaz"
   ];
   const blob=new Blob([rows.join("\n")],{type:"text/csv"});
   const a=document.createElement("a");
