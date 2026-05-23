@@ -71,7 +71,7 @@ async function _fbSignIn() {
     _fbAuthReady = true;
     return true;
   } catch(e) {
-    console.warn("Firebase Auth error:", e.message);
+    console.warn("Firebase Auth:", e.message);
     return false;
   }
 }
@@ -125,6 +125,7 @@ window._fb = {
   // Guardar todos los productos (reemplaza array completo)
   saveProducts: async (productsArr) => {
     if (!fbReady) return;
+    if(!_fbAuthReady){ await _fbSignIn(); }
     const obj = {};
     productsArr.forEach(p => {
       const key = p._key || push(ref(db, "products")).key;
@@ -187,6 +188,7 @@ window._fb = {
   },
   saveGeoData: async (data) => {
     if (!fbReady) return;
+    if(!_fbAuthReady){ await _fbSignIn(); }
     if(data===null){
       await set(ref(db, "geodata"), null);
     } else {
@@ -1773,7 +1775,7 @@ function doTrack(){
   }).join("");
 }
 
-async function doLogin(){
+function doLogin(){
   const user=document.getElementById("loginUser").value.trim();
   const pass=document.getElementById("loginPass").value.trim();
   const[cu,cp]=(storeSettings.credentials||"distribuidora:genesis2024").split(":");
@@ -1781,9 +1783,9 @@ async function doLogin(){
     loggedIn=true;
     document.getElementById("adminNavBtn").style.display="";
     document.getElementById("adminLoginBtn").style.display="none";
-    // Firebase Auth sign-in para poder escribir con reglas auth != null
-    await _fbSignIn();
     showPage("admin");
+    // Firebase Auth en segundo plano — no bloquea el ingreso al panel
+    if(typeof _fbSignIn==="function") _fbSignIn().catch(()=>{});
   } else toast("Credenciales incorrectas","error");
 }
 async function doLogout(){loggedIn=false;document.getElementById("adminNavBtn").style.display="none";document.getElementById("adminLoginBtn").style.display="";await _fbSignOut();showPage("shop");}
