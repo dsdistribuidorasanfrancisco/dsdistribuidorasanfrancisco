@@ -11,6 +11,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, onValue, set, push, update, remove, get }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const _savedFbCfg = JSON.parse(localStorage.getItem("lx_fb_config") || "null");
 const FIREBASE_CONFIG = _savedFbCfg || {
@@ -36,10 +38,12 @@ function syncStatus(ok, label) {
   if (lbl) lbl.textContent = label;
 }
 
+let _fbAuth = null;
 try {
   if (!FB_CONFIGURED) throw new Error("Firebase no configurado");
   const app = initializeApp(FIREBASE_CONFIG);
   db = getDatabase(app);
+  _fbAuth = getAuth(app);
   fbReady = true;
   syncStatus(true, "online");
 } catch(e) {
@@ -49,6 +53,32 @@ try {
     console.warn("Error conectando Firebase:", e);
   }
   syncStatus(false, "local");
+}
+
+// ── Firebase Auth state listener ──────────────────────────────
+const ADMIN_EMAIL = "dsdistribuidorasanfrancisco@gmail.com";
+const ADMIN_PASS  = "sfcmayoreo123";
+let _fbAuthReady = false;
+if (_fbAuth) {
+  onAuthStateChanged(_fbAuth, user => {
+    _fbAuthReady = !!user;
+  });
+}
+async function _fbSignIn() {
+  if (!_fbAuth) return false;
+  try {
+    await signInWithEmailAndPassword(_fbAuth, ADMIN_EMAIL, ADMIN_PASS);
+    _fbAuthReady = true;
+    return true;
+  } catch(e) {
+    console.warn("Firebase Auth error:", e.message);
+    return false;
+  }
+}
+async function _fbSignOut() {
+  if (!_fbAuth) return;
+  try { await signOut(_fbAuth); } catch(e) {}
+  _fbAuthReady = false;
 }
 
 // ── Exponer funciones al scope global ─────────────────────────
@@ -1743,14 +1773,20 @@ function doTrack(){
   }).join("");
 }
 
-function doLogin(){
+async function doLogin(){
   const user=document.getElementById("loginUser").value.trim();
   const pass=document.getElementById("loginPass").value.trim();
   const[cu,cp]=(storeSettings.credentials||"distribuidora:genesis2024").split(":");
-  if(user===cu&&pass===cp){loggedIn=true;document.getElementById("adminNavBtn").style.display="";document.getElementById("adminLoginBtn").style.display="none";showPage("admin");}
-  else toast("Credenciales incorrectas","error");
+  if(user===cu&&pass===cp){
+    loggedIn=true;
+    document.getElementById("adminNavBtn").style.display="";
+    document.getElementById("adminLoginBtn").style.display="none";
+    // Firebase Auth sign-in para poder escribir con reglas auth != null
+    await _fbSignIn();
+    showPage("admin");
+  } else toast("Credenciales incorrectas","error");
 }
-function doLogout(){loggedIn=false;document.getElementById("adminNavBtn").style.display="none";document.getElementById("adminLoginBtn").style.display="";showPage("shop");}
+async function doLogout(){loggedIn=false;document.getElementById("adminNavBtn").style.display="none";document.getElementById("adminLoginBtn").style.display="";await _fbSignOut();showPage("shop");}
 
 function switchAdminTab(tab,el){
   document.querySelectorAll(".admin-tab").forEach(t=>t.classList.remove("active"));
