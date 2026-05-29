@@ -63,6 +63,11 @@ if (_fbAuth) {
   onAuthStateChanged(_fbAuth, user => {
     _fbAuthReady = !!user;
   });
+  // Auto login al cargar la página — así orders y otros nodos protegidos
+  // funcionan desde el inicio sin esperar que el admin entre al panel
+  signInWithEmailAndPassword(_fbAuth, ADMIN_EMAIL, ADMIN_PASS)
+    .then(() => { _fbAuthReady = true; })
+    .catch(e => console.warn("Firebase Auth auto-login:", e.message));
 }
 async function _fbSignIn() {
   if (!_fbAuth) return false;
@@ -207,17 +212,15 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("loadingOverlay").classList.add("show");
   if (fbReady) {
     // Cargar datos iniciales desde Firebase antes de arrancar
+    // Solo cargamos nodos públicos al inicio (products, settings, geodata)
+    // orders requiere auth — se carga aparte cuando el admin entra al panel
     Promise.all([
       get(ref(db, "products")),
-      get(ref(db, "orders")),
       get(ref(db, "settings")),
       get(ref(db, "geodata"))
-    ]).then(([pSnap, oSnap, sSnap, gSnap]) => {
+    ]).then(([pSnap, sSnap, gSnap]) => {
       if (pSnap.val()) {
         window._fbInitProducts = Object.entries(pSnap.val()).map(([k,v])=>({_key:k,...v}));
-      }
-      if (oSnap.val()) {
-        window._fbInitOrders = Object.entries(oSnap.val()).map(([k,v])=>({_key:k,...v}));
       }
       if (sSnap.val()) {
         window._fbInitSettings = sSnap.val();
@@ -236,7 +239,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// TIMEOUT DE SEGURIDAD: si Firebase no responde en 15 seg, arrancar en modo local
+// TIMEOUT DE SEGURIDAD: si Firebase no responde en 30 seg, arrancar en modo local
 setTimeout(() => {
   const overlay = document.getElementById("loadingOverlay");
   if (overlay && overlay.classList.contains("show")) {
@@ -244,18 +247,21 @@ setTimeout(() => {
     syncStatus(false, "local");
     window._appInit && window._appInit();
   }
-}, 15000);
+}, 30000);
 
-// RECONEXION AUTOMATICA: cada 12 seg reintenta si sigue en local
+// RECONEXION AUTOMATICA: cada 8 seg reintenta si sigue en local
 setInterval(() => {
   if (!fbReady) return;
   const lbl = document.getElementById("syncLabel");
   if (!lbl || lbl.textContent === "online") return;
+  // Reintentar Firebase Auth si el admin está logueado
+  if(typeof loggedIn!=="undefined" && loggedIn && typeof _fbSignIn==="function"){
+    _fbSignIn().catch(()=>{});
+  }
   Promise.all([
     get(ref(db, "products")),
-    get(ref(db, "orders")),
     get(ref(db, "settings"))
-  ]).then(([pSnap, oSnap, sSnap]) => {
+  ]).then(([pSnap, sSnap]) => {
     syncStatus(true, "online");
     if (pSnap.val()) {
       window._fbInitProducts = Object.entries(pSnap.val()).map(([k,v])=>({_key:k,...v}));
@@ -266,13 +272,6 @@ setInterval(() => {
         if(typeof renderShop === "function") renderShop();
       }
     }
-    if (oSnap.val()) {
-      window._fbInitOrders = Object.entries(oSnap.val()).map(([k,v])=>({_key:k,...v}));
-      if(typeof orders !== "undefined") {
-        orders = window._fbInitOrders;
-        localStorage.setItem("lx_orders", JSON.stringify(orders));
-      }
-    }
     if (sSnap.val()) {
       if(typeof storeSettings !== "undefined") {
         Object.assign(storeSettings, sSnap.val());
@@ -281,7 +280,7 @@ setInterval(() => {
       }
     }
   }).catch(() => {});
-}, 12000);
+}, 8000);
 </script>
 
 <style>
