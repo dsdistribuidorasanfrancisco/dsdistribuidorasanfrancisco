@@ -2345,8 +2345,11 @@ function importInventoryCSV(e){
     try{
       var lines=ev.target.result.replace(/\r/g,"").split("\n").filter(function(l){return l.trim();});
       if(lines.length<2){toast("Archivo vacio o sin datos","error");return;}
-      var header=parseCSVRow(lines[0]).map(function(h){return h.toLowerCase().trim();});
-      function gi(keys){for(var k=0;k<keys.length;k++){var i=header.indexOf(keys[k]);if(i>=0)return i;}return -1;}
+      function normH(s){return s.toLowerCase().trim()
+        .replace(/á/g,"a").replace(/é/g,"e").replace(/í/g,"i")
+        .replace(/ó/g,"o").replace(/ú/g,"u").replace(/ü/g,"u").replace(/ñ/g,"n");}
+      var header=parseCSVRow(lines[0]).map(function(h){return normH(h.replace(/^﻿/,""));});
+      function gi(keys){for(var k=0;k<keys.length;k++){var i=header.indexOf(normH(keys[k]));if(i>=0)return i;}return -1;}
       var idx={
         id:header.indexOf("id"),
         sku:gi(["sku","clave"]),
@@ -2386,10 +2389,11 @@ function importInventoryCSV(e){
       }
       sortProductsAZ(); saveProducts();renderAdminProducts();populateInventorySelect();renderShop();
       toast("Importado: "+added+" nuevos, "+updated+" actualizados","success");
-    }catch(err){toast("Error al leer el CSV","error");console.error(err);}
+    }catch(err){toast("Error al leer el CSV: "+(err&&err.message?err.message:String(err)),"error");console.error(err);}
     e.target.value="";
   };
-  reader.readAsText(file,"UTF-8");
+  // Intentar UTF-8, si hay error de encoding usar latin1
+  try{ reader.readAsText(file,"UTF-8"); }catch(e){ reader.readAsText(file,"ISO-8859-1"); }
 }
 
 function parseCSVRow(line){
