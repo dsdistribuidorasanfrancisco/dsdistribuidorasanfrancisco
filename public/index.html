@@ -764,10 +764,19 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
     <select id="filterCategory" onchange="currentPage=1;renderShop()">
       <option value="">Todas las categorías</option>
     </select>
-    <div style="display:flex;gap:0.4rem;flex-wrap:wrap;align-items:center">
-      <span style="font-size:0.8rem;font-weight:700;color:var(--text-muted);white-space:nowrap">Vista:</span>
-      <button id="shopBtnPublico" class="shop-price-btn active" onclick="setMayoreoTipo('publico')">🛒 Público</button>
-      <button id="shopBtnMayoristas" class="shop-price-btn" onclick="setMayoreoTipo('media_docena')">🏪 Mayoristas</button>
+
+    <!-- Vista: Público / Mayoristas -->
+    <div style="display:flex;flex-direction:column;gap:0.4rem;width:100%">
+      <div style="display:flex;gap:0.4rem;align-items:center;flex-wrap:wrap">
+        <span style="font-size:0.8rem;font-weight:700;color:var(--text-muted);white-space:nowrap">Vista:</span>
+        <button id="shopBtnPublico" class="shop-price-btn active" onclick="setVistaShop('publico')">🛒 Público</button>
+        <button id="shopBtnMayoristas" class="shop-price-btn" onclick="setVistaShop('mayoristas')">🏪 Mayoristas</button>
+      </div>
+      <div id="shopSubBtns" style="display:none;flex-wrap:wrap;gap:0.4rem;padding-left:3.2rem">
+        <button id="shopSubMediaDoc" class="shop-price-btn" onclick="setMayoreoTipo('media_docena')">💵 ½ DOC</button>
+        <button id="shopSubDocena"   class="shop-price-btn" onclick="setMayoreoTipo('docena')">💵 DOC</button>
+        <button id="shopSubFardo"    class="shop-price-btn" onclick="setMayoreoTipo('fardo')">🎁 FARDO</button>
+      </div>
     </div>
     <span id="productCount"></span>
   </div>
@@ -1222,17 +1231,27 @@ const MAYOREO_SUB_TIPOS={
 // Obtiene el precio del producto según el tipo seleccionado
 function getPrecioProducto(p){
   if(!mayoreoMode||mayoreoTipo==="publico"||!mayoreoTipo){
-    // En modo público, si hay precio de oferta se usa ese
     if(p.precio_oferta&&p.precio_oferta>0) return p.precio_oferta;
     return p.price;
   }
-  if(mayoreoTipo==="media_docena"&&p.precio_media_docena>0) return p.precio_media_docena;
-  if(mayoreoTipo==="docena"&&p.precio_docena>0) return p.precio_docena;
-  if(mayoreoTipo==="fardo"&&p.precio_fardo>0) return p.precio_fardo;
-  // fallback a mayoristas general
-  const precioEspecial=p.precio_mayoristas||p.precio_uds;
-  if(precioEspecial&&precioEspecial>0) return precioEspecial;
+  // Sub-precios específicos por tipo (si están cargados)
+  if(mayoreoTipo==="media_docena"&&parseFloat(p.precio_media_docena)>0) return parseFloat(p.precio_media_docena);
+  if(mayoreoTipo==="docena"&&parseFloat(p.precio_docena)>0) return parseFloat(p.precio_docena);
+  if(mayoreoTipo==="fardo"&&parseFloat(p.precio_fardo)>0) return parseFloat(p.precio_fardo);
+  // Fallback: usar precio_mayoristas general si existe
+  const precioEspecial=parseFloat(p.precio_mayoristas)||parseFloat(p.precio_uds)||0;
+  if(precioEspecial>0) return precioEspecial;
+  // Si no hay ningún precio mayorista, devolver precio público
   return p.price;
+}
+// Indica si el producto tiene precio especial activo (para mostrar tachado)
+function tieneEspecialActivo(p){
+  if(!mayoreoMode||mayoreoTipo==="publico"||!mayoreoTipo) return false;
+  if(mayoreoTipo==="media_docena"&&parseFloat(p.precio_media_docena)>0) return true;
+  if(mayoreoTipo==="docena"&&parseFloat(p.precio_docena)>0) return true;
+  if(mayoreoTipo==="fardo"&&parseFloat(p.precio_fardo)>0) return true;
+  if((parseFloat(p.precio_mayoristas)||0)>0) return true;
+  return false;
 }
 
 // Compatibilidad legacy
@@ -1449,14 +1468,14 @@ function renderShop(){
   grid.innerHTML=slice.map(p=>{
     const avail=p.stock>0, img=p.img||p.imgUrl;
     const precio=getPrecioProducto(p);
-    const tieneEspecial=mayoreoMode&&p["precio_"+mayoreoTipo]&&p["precio_"+mayoreoTipo]>0;
+    const tieneEspecial=tieneEspecialActivo(p);
     const tieneOferta=(!mayoreoMode||mayoreoTipo==="publico"||!mayoreoTipo)&&p.precio_oferta&&p.precio_oferta>0&&p.precio_oferta<p.price;
     return "<div class='product-card'>"+
 
       "<div class='product-img-wrap' onclick='openProductDetail("+p.id+")' style='cursor:pointer'>"+
         (img?"<img src='"+img+"' alt='"+p.name+"' loading='lazy' onerror=\"this.style.display='none';this.nextElementSibling.style.display='flex'\"><div class='product-img-placeholder' style='display:none'>🖼<span>Sin imagen</span></div>":"<div class='product-img-placeholder'>🖼<span>Sin imagen</span></div>")+
         "<div class='status-dot "+(avail?"available":"unavailable")+"'></div>"+
-        (tieneEspecial?"<div style='position:absolute;top:0.8rem;left:0.8rem;background:var(--orange);color:#fff;border-radius:100px;padding:0.2rem 0.6rem;font-size:0.7rem;font-weight:700;'>"+PRECIO_TIPOS[mayoreoTipo].icon+" "+PRECIO_TIPOS[mayoreoTipo].label+"</div>":"")+
+        (tieneEspecial?"<div style='position:absolute;top:0.8rem;left:0.8rem;background:var(--orange);color:#fff;border-radius:100px;padding:0.2rem 0.6rem;font-size:0.7rem;font-weight:700;'>"+(({...PRECIO_TIPOS,...MAYOREO_SUB_TIPOS})[mayoreoTipo]||{icon:'🏪',label:'Mayoristas'}).icon+" "+(({...PRECIO_TIPOS,...MAYOREO_SUB_TIPOS})[mayoreoTipo]||{icon:'🏪',label:'Mayoristas'}).label+"</div>":"")+
         (tieneOferta?"<div style='position:absolute;top:0.8rem;left:0.8rem;background:var(--red);color:#fff;border-radius:100px;padding:0.2rem 0.6rem;font-size:0.7rem;font-weight:700;'>🏷️ OFERTA</div>":"")+
       "</div>"+
       "<div class='product-info'>"+
@@ -1512,14 +1531,30 @@ function updateCartCount(){
   const badge=document.getElementById("cartBadge");
   badge.textContent=total; badge.style.display=total>0?"flex":"none";
 }
+function setVistaShop(vista){
+  if(vista==="publico"){
+    setMayoreoTipo("publico");
+  } else {
+    const sub=document.getElementById("shopSubBtns");
+    if(sub) sub.style.display="flex";
+    setMayoreoTipo("media_docena");
+  }
+}
 function setMayoreoTipo(tipo){
   mayoreoTipo=tipo; mayoreoMode=tipo!=="publico"&&tipo!=="";
   const allLabels={...PRECIO_TIPOS,...MAYOREO_SUB_TIPOS};
   const label=allLabels[tipo||"publico"]?.label||"Público";
-  const shopTipo=(tipo==="publico"||!tipo)?"publico":"mayoristas";
-  ["publico","mayoristas"].forEach(t=>{
-    const btn=document.getElementById("shopBtn"+t.charAt(0).toUpperCase()+t.slice(1));
-    if(btn) btn.className="shop-price-btn"+(shopTipo===t?" active":"");
+  const esPublico=(tipo==="publico"||!tipo);
+  const btnPub=document.getElementById("shopBtnPublico");
+  const btnMay=document.getElementById("shopBtnMayoristas");
+  if(btnPub) btnPub.className="shop-price-btn"+(esPublico?" active":"");
+  if(btnMay) btnMay.className="shop-price-btn"+(!esPublico?" active":"");
+  const sub=document.getElementById("shopSubBtns");
+  if(sub) sub.style.display=esPublico?"none":"flex";
+  const idMap={media_docena:"shopSubMediaDoc",docena:"shopSubDocena",fardo:"shopSubFardo"};
+  ["media_docena","docena","fardo"].forEach(k=>{
+    const b=document.getElementById(idMap[k]);
+    if(b) b.className="shop-price-btn"+(mayoreoTipo===k?" active":"");
   });
   toast("Vista: "+label,"success");
   renderCart(); renderShop();
@@ -1533,7 +1568,7 @@ function renderCart(){
   itemsEl.innerHTML=cart.map(ci=>{
     const p=products.find(x=>x.id===ci.id); if(!p)return"";
     const pu=getPrecioProducto(p), img=p.img||p.imgUrl;
-    const tieneEspecial=mayoreoMode&&p["precio_"+mayoreoTipo]&&p["precio_"+mayoreoTipo]>0;
+    const tieneEspecial=tieneEspecialActivo(p);
     return "<div class='cart-item'>"+
       (img?"<img class='cart-item-img' src='"+img+"' onerror=\"this.style.display='none'\">":"<div class='cart-item-img' style='display:flex;align-items:center;justify-content:center;font-size:2rem'>🖼</div>")+
       "<div class='cart-item-info'>"+
@@ -2632,7 +2667,7 @@ function openProductDetail(id) {
   const precio = getPrecioProducto(p);
   const avail = p.stock > 0;
   const tieneOferta = (!mayoreoMode||mayoreoTipo==="publico"||!mayoreoTipo) && p.precio_oferta && p.precio_oferta>0 && p.precio_oferta<p.price;
-  const tieneEspecial = mayoreoMode && p["precio_"+mayoreoTipo] && p["precio_"+mayoreoTipo]>0;
+  const tieneEspecial = tieneEspecialActivo(p);
 
   // Collect all images (multi-image array or legacy single)
   const allImgs = (p.images && p.images.length) ? p.images : (p.img||p.imgUrl ? [p.img||p.imgUrl] : []);
@@ -2713,7 +2748,7 @@ function openProductDetail(id) {
 
   const badge = document.getElementById("pdBadge2");
   if (tieneOferta) badge.innerHTML = "<span class='pd-badge2' style='background:var(--red-soft);color:var(--red)'>🏷️ OFERTA</span>";
-  else if (tieneEspecial) badge.innerHTML = "<span class='pd-badge2' style='background:#fff3cd;color:#92400e'>"+PRECIO_TIPOS[mayoreoTipo].icon+" "+PRECIO_TIPOS[mayoreoTipo].label+"</span>";
+  else if (tieneEspecial) badge.innerHTML = "<span class='pd-badge2' style='background:#fff3cd;color:#92400e'>"+(({...PRECIO_TIPOS,...MAYOREO_SUB_TIPOS})[mayoreoTipo]||{icon:'🏪',label:'Mayoristas'}).icon+" "+(({...PRECIO_TIPOS,...MAYOREO_SUB_TIPOS})[mayoreoTipo]||{icon:'🏪',label:'Mayoristas'}).label+"</span>";
   else badge.innerHTML = "";
 
   document.getElementById("pdName2").textContent = p.name;
