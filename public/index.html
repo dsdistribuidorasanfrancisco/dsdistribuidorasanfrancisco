@@ -1141,16 +1141,16 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
             <div class="form-group"><label>Nombre de la tienda *</label><input type="text" id="psNombre" placeholder="Ej: Sucursal Central, Tienda Norte..."></div>
             <div class="form-group"><label>Dirección *</label><input type="text" id="psDireccion" placeholder="Ej: 5a Av. 10-20 Zona 1, Guatemala"></div>
             <div class="form-group">
-              <label>Lugar <span style="font-size:0.78rem;font-weight:400;color:var(--text-muted)">(opcional)</span></label>
-              <select id="psAldea" style="width:100%"><option value="">Todo el municipio</option></select>
+              <label>Departamento</label>
+              <select id="psDept" onchange="loadPsMunicipiosSelect()" style="width:100%"><option value="">Selecciona departamento</option></select>
             </div>
             <div class="form-group">
               <label>Municipio *</label>
               <select id="psMun" onchange="loadPsAldeaSelect()" style="width:100%"><option value="">Selecciona un departamento</option></select>
             </div>
             <div class="form-group">
-              <label>Departamento</label>
-              <select id="psDept" onchange="loadPsMunicipiosSelect()" style="width:100%"><option value="">Selecciona departamento</option></select>
+              <label>Lugar <span style="font-size:0.78rem;font-weight:400;color:var(--text-muted)">(opcional)</span></label>
+              <select id="psAldea" style="width:100%"><option value="">Todo el municipio</option></select>
             </div>
             <button class="btn btn-primary" onclick="addPickupStore()">+ Agregar Tienda</button>
           </div>
@@ -1240,9 +1240,9 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
     <div class="settings-card">
       <h4>Costo de Envío por Municipio</h4>
       <div style="display:flex;gap:0.8rem;flex-wrap:wrap;margin-bottom:1.5rem;align-items:flex-end">
-        <div class="form-group" style="margin:0;flex:1;min-width:160px"><label>Lugar <span style="font-size:0.78rem;font-weight:400;color:var(--text-muted)">(opcional)</span></label><select id="shippingAldea" style="width:100%"><option value="">Todo el municipio</option></select></div>
-        <div class="form-group" style="margin:0;flex:1;min-width:140px"><label>Municipio</label><select id="shippingMun" onchange="onShippingMunChange()" style="width:100%"><option value="">Selecciona dept.</option></select></div>
         <div class="form-group" style="margin:0;flex:1;min-width:140px"><label>Departamento</label><select id="shippingDept" onchange="onShippingDeptChange()" style="width:100%"><option value="">Selecciona</option></select></div>
+        <div class="form-group" style="margin:0;flex:1;min-width:140px"><label>Municipio</label><select id="shippingMun" onchange="onShippingMunChange()" style="width:100%"><option value="">Selecciona dept.</option></select></div>
+        <div class="form-group" style="margin:0;flex:1;min-width:160px"><label>Lugar <span style="font-size:0.78rem;font-weight:400;color:var(--text-muted)">(opcional)</span></label><select id="shippingAldea" style="width:100%"><option value="">Todo el municipio</option></select></div>
         <div class="form-group" style="margin:0;flex:1;min-width:100px"><label>Costo Q</label><input type="number" id="shippingCost" min="0" step="1" placeholder="0"></div>
         <button class="btn btn-primary" onclick="addShippingZone()" style="width:100%; margin-top:0.5rem">+ Agregar Zona</button>
       </div>
@@ -1257,7 +1257,7 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
   </div>
   <div class="admin-panel" id="panel-aldeas">
     <div class="settings-card">
-      <h4>🗺️ Gestionar Geodata (Lugar / Municipio / Depto)</h4>
+      <h4>🗺️ Gestionar Geodata (Depto / Municipio / Lugar)</h4>
       <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:1.2rem">
         Sube un CSV para agregar lugares, municipios y departamentos.
         Se guardan en <strong>Firebase</strong> y todos los clientes los verán al instante.
@@ -1266,15 +1266,15 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
       <div style="background:#f0f9ff;border:1px solid #bae0fd;border-radius:var(--radius-sm);padding:1rem;margin-bottom:1.4rem">
         <div style="font-weight:700;font-size:0.85rem;margin-bottom:0.4rem;color:#0369a1">📋 Formato del CSV — 3 columnas</div>
         <p style="font-size:0.82rem;color:#0369a1;margin:0 0 0.5rem">
-          <strong>lugar, municipio, departamento</strong><br>
+          <strong>departamento, municipio, lugar</strong><br>
                   </p>
         <code style="font-size:0.8rem;color:#075985;display:block;line-height:1.9;background:#e0f2fe;padding:0.5rem;border-radius:4px">
-          lugar,municipio,departamento<br>
-          Xeaj,San Francisco La Unión,Quetzaltenango<br>
-          Lo de Bran,Mixco,Guatemala<br>
-          El Tejar,Chimaltenango,Chimaltenango<br>
-          El Rancho,Chiantla,Huehuetenango<br>
-          Chamché,Cobán,Alta Verapaz
+          departamento,municipio,lugar<br>
+          Quetzaltenango,San Francisco La Unión,Xeaj<br>
+          Guatemala,Mixco,Lo de Bran<br>
+          Chimaltenango,Chimaltenango,El Tejar<br>
+          Huehuetenango,Chiantla,El Rancho<br>
+          Alta Verapaz,Cobán,Chamché
         </code>
         <button class="btn btn-ghost" style="margin-top:0.8rem;font-size:0.8rem;padding:0.4rem 0.9rem" onclick="downloadAldeaTemplate()">⬇ Descargar plantilla CSV</button>
       </div>
@@ -1362,9 +1362,9 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
     <h3>Confirmar Pedido</h3>
     <div class="form-group"><label>Nombre Completo *</label><input type="text" id="buyerName" placeholder="Tu nombre completo"></div>
     <div class="form-group"><label>Contacto (teléfono o email) *</label><input type="text" id="buyerContact" placeholder="5555-1234"></div>
-    <div class="form-group"><label>Lugar <span style="font-size:0.78rem;font-weight:400;color:var(--text-muted)">(opcional)</span></label><select id="buyerAldea" onchange="updateCheckoutTotal()" style="width:100%"><option value="">Todo el municipio / Cabecera</option></select></div>
-    <div class="form-group"><label>Municipio *</label><select id="buyerMun" onchange="onBuyerMunChange()"><option value="">Selecciona dept. primero</option></select></div>
     <div class="form-group"><label>Departamento *</label><select id="buyerDept" onchange="loadMunicipios()"><option value="">Selecciona</option></select></div>
+    <div class="form-group"><label>Municipio *</label><select id="buyerMun" onchange="onBuyerMunChange()"><option value="">Selecciona dept. primero</option></select></div>
+    <div class="form-group"><label>Lugar <span style="font-size:0.78rem;font-weight:400;color:var(--text-muted)">(opcional)</span></label><select id="buyerAldea" onchange="updateCheckoutTotal()" style="width:100%"><option value="">Todo el municipio / Cabecera</option></select></div>
     <div class="form-group"><label>Dirección (opcional)</label><input type="text" id="buyerAddress" placeholder="Calle, colonia, referencia..."></div>
     <div class="form-group"><label>Notas (opcional)</label><textarea id="buyerNotes" placeholder="Instrucciones especiales..."></textarea></div>
     <div id="checkoutItemsDiv" class="checkout-items-summary"></div>
@@ -2523,8 +2523,8 @@ function renderShippingZones(){
   const cont=document.getElementById("shippingZonesList"); if(!cont)return;
   const zones=storeSettings.shippingZones||{}, entries=Object.entries(zones);
   if(!entries.length){cont.innerHTML="<p style='font-size:0.95rem;color:var(--text-muted)'>Sin zonas especiales configuradas.</p>";return;}
-  cont.innerHTML="<table class='admin-table'><thead><tr><th>Lugar</th><th>Municipio</th><th>Departamento</th><th>Costo</th><th>Acción</th></tr></thead><tbody>"+
-    entries.map(([k,v])=>{const parts=k.split("|");const d=parts[0],m=parts[1],a=parts[2]||"";return"<tr><td>"+(a?"<span style='background:var(--green-soft);color:#065f46;border-radius:100px;padding:0.2rem 0.6rem;font-size:0.8rem;font-weight:700'>"+a+"</span>":"<span style='color:var(--text-muted);font-size:0.85rem'>—</span>")+"</td><td>"+m+"</td><td>"+d+"</td><td><strong>Q"+v+"</strong></td><td><button class='btn-del' onclick='removeShippingZone(\""+k+"\")'>Quitar</button></td></tr>";}).join("")+
+  cont.innerHTML="<table class='admin-table'><thead><tr><th>Departamento</th><th>Municipio</th><th>Lugar</th><th>Costo</th><th>Acción</th></tr></thead><tbody>"+
+    entries.map(([k,v])=>{const parts=k.split("|");const d=parts[0],m=parts[1],a=parts[2]||"";return"<tr><td>"+d+"</td><td>"+m+"</td><td>"+(a?"<span style='background:var(--green-soft);color:#065f46;border-radius:100px;padding:0.2rem 0.6rem;font-size:0.8rem;font-weight:700'>"+a+"</span>":"<span style='color:var(--text-muted);font-size:0.85rem'>—</span>")+"</td><td><strong>Q"+v+"</strong></td><td><button class='btn-del' onclick='removeShippingZone(\""+k+"\")'>Quitar</button></td></tr>";}).join("")+
   "</tbody></table>";
 }
 
@@ -3137,7 +3137,7 @@ function handleAldeaCsv(input){
   window._pendingDepts={};
   const reader=new FileReader();
   reader.onload=function(e){
-    const lines=e.target.result.replace(/^\uFEFF/,'').split(/\r?\n/).filter(l=>l.trim()&&!/^lugar/i.test(l.trim()));
+    const lines=e.target.result.replace(/^\uFEFF/,'').split(/\r?\n/).filter(l=>l.trim()&&!/^departamento/i.test(l.trim()));
     const preview={}; let ok=0,bad=0;
     lines.forEach(line=>{
       // Parse CSV respetando campos entre comillas
@@ -3150,8 +3150,8 @@ function handleAldeaCsv(input){
       }
       cols.push(cur.trim());
       if(cols.length<3||!cols[0]||!cols[1]||!cols[2]){bad++;return;}
-      const lugar=cols[0].replace(/^"|"$/g,""),mun=cols[1].replace(/^"|"$/g,""),dept=cols[2].replace(/^"|"$/g,"");
-      // 3 cols: lugar,municipio,departamento
+      const dept=cols[0].replace(/^"|"$/g,""),mun=cols[1].replace(/^"|"$/g,""),lugar=cols[2].replace(/^"|"$/g,"");
+      // 3 cols: departamento,municipio,lugar
       if(!preview[dept]) preview[dept]={};
       if(!preview[dept][mun]) preview[dept][mun]=[];
       if(!preview[dept][mun].includes(lugar)){preview[dept][mun].push(lugar);ok++;}
@@ -3162,7 +3162,7 @@ function handleAldeaCsv(input){
     const status=document.getElementById("aldeaCsvStatus");
     status.style.display="block";
     if(ok===0){
-      status.innerHTML='<div style="background:#fff1f2;border:1px solid #fecdd3;border-radius:var(--radius-sm);padding:0.8rem;font-size:0.85rem;color:#e11d48">❌ No se encontraron filas válidas. Formato: lugar,municipio,departamento</div>';
+      status.innerHTML='<div style="background:#fff1f2;border:1px solid #fecdd3;border-radius:var(--radius-sm);padding:0.8rem;font-size:0.85rem;color:#e11d48">❌ No se encontraron filas válidas. Formato: departamento,municipio,lugar</div>';
       return;
     }
     status.innerHTML=`<div style="background:#f0f9ff;border:1px solid #bae0fd;border-radius:var(--radius-sm);padding:0.8rem;font-size:0.85rem">
@@ -3210,12 +3210,12 @@ async function saveAldeaData(){
 }
 
 function exportAldeaData(){
-  const rows=["lugar,municipio,departamento"];
+  const rows=["departamento,municipio,lugar"];
   // Exportar aldeas/cantones/etc
   for(const dept in GT_ALDEAS){
     for(const mun in GT_ALDEAS[dept]){
       (GT_ALDEAS[dept][mun]||[]).forEach(nombre=>{
-        rows.push([nombre,mun,dept].join(","));
+        rows.push([dept,mun,nombre].join(","));
       });
     }
   }
@@ -3255,16 +3255,16 @@ async function clearAldeaData(){
 
 function downloadAldeaTemplate(){
   const rows=[
-    "lugar,municipio,departamento",
-    "Xeaj,San Francisco La Unión,Quetzaltenango",
-    "Lo de Bran,Mixco,Guatemala",
-    "Lo de Fuentes,Mixco,Guatemala",
-    "Bárcenas,Villa Nueva,Guatemala",
-    "Zona 1,Guatemala,Guatemala",
-    "El Tejar,Chimaltenango,Chimaltenango",
-    "Panimaquin,Comalapa,Chimaltenango",
-    "El Rancho,Chiantla,Huehuetenango",
-    "Chamché,Cobán,Alta Verapaz"
+    "departamento,municipio,lugar",
+    "Quetzaltenango,San Francisco La Unión,Xeaj",
+    "Guatemala,Mixco,Lo de Bran",
+    "Guatemala,Mixco,Lo de Fuentes",
+    "Guatemala,Villa Nueva,Bárcenas",
+    "Guatemala,Guatemala,Zona 1",
+    "Chimaltenango,Chimaltenango,El Tejar",
+    "Chimaltenango,Comalapa,Panimaquin",
+    "Huehuetenango,Chiantla,El Rancho",
+    "Alta Verapaz,Cobán,Chamché"
   ];
   const blob=new Blob([rows.join("\n")],{type:"text/csv"});
   const a=document.createElement("a");
