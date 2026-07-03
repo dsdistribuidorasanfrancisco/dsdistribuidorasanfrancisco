@@ -898,7 +898,6 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
 
 <nav class="navbar">
   <div class="nav-logo">
-    <img id="storeLogo" src="" alt="">
     <span id="storeNameEl">DS Distribuidora San Francisco</span>
   </div>
   <div class="nav-links">
@@ -1628,7 +1627,7 @@ function applyStoreSettings(){
   document.getElementById("heroSubtitle").textContent=s.desc||"";
   document.getElementById("storeNameEl").innerHTML=s.name+"";
   const logoEl=document.getElementById("storeLogo");
-  if(s.logo){logoEl.src=s.logo;logoEl.style.display="block";}else{logoEl.style.display="none";}
+  if(logoEl){ if(s.logo){logoEl.src=s.logo;logoEl.style.display="block";}else{logoEl.style.display="none";} }
   // Logo superpuesto en el hero
   const heroLogoImg=document.getElementById("heroLogo");
   if(heroLogoImg){
