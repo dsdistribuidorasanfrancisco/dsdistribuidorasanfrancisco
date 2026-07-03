@@ -636,6 +636,9 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
 .qty-btn:hover { background: var(--dark); color: #fff; border-color: var(--dark); }
 .qty-btn:active { transform: scale(0.9); }
 .qty-num { min-width: 32px; text-align: center; font-weight: 700; font-size: 1rem; }
+.qty-num-input { width: 52px; text-align: center; font-weight: 700; font-size: 1rem; border: 1px solid var(--border); border-radius: 8px; padding: 0.4rem 0.2rem; font-family: inherit; color: var(--dark); background: var(--bg); -moz-appearance: textfield; }
+.qty-num-input::-webkit-outer-spin-button, .qty-num-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.qty-num-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(4, 158, 13, 0.12); }
 .remove-btn { background: none; border: none; color: var(--red); cursor: pointer; font-size: 0.85rem; font-weight: 600; text-decoration: none; padding: 0.5rem; margin-left: 0.5rem; transition: color 0.2s; }
 .remove-btn:hover { color: #b91c1c; text-decoration: underline; }
 .cart-total-price { margin-left: auto; text-align: right; font-weight: 800; font-size: 1.2rem; color: var(--dark); font-family: "Plus Jakarta Sans"; }
@@ -1357,6 +1360,10 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
           <input type="number" id="fFardo" placeholder="0" min="0" step="0.01" oninput="previewPrecios()" style="width:100%;padding:0.7rem;border:1px solid rgba(245,158,11,0.4);border-radius:6px;font-size:0.95rem;background:#fff;font-weight:600">
         </div>
       </div>
+      <div class="form-group" style="margin-top:0.8rem;margin-bottom:0">
+        <label style="font-size:0.8rem;font-weight:700;color:#92400e;display:block;margin-bottom:0.3rem">📦 Unidades que trae el FARDO</label>
+        <input type="number" id="fUnidFardo" placeholder="Ej: 24" min="0" step="1" style="width:100%;padding:0.7rem;border:1px solid rgba(245,158,11,0.4);border-radius:6px;font-size:0.95rem;background:#fff;font-weight:600">
+      </div>
       <div style="font-size:0.78rem;color:#92400e;margin-top:0.7rem;font-style:italic">Deja en 0 si no aplica ese tipo de precio para este producto.</div>
       <div id="precioPreview" style="margin-top:0.8rem;font-size:0.85rem;color:#92400e;font-weight:600"></div>
     </div>
@@ -1739,6 +1746,7 @@ function renderShop(){
             (tieneEspecial?"<div style='font-size:0.8rem;color:var(--text-muted);text-decoration:line-through'>Q"+p.price.toFixed(2)+"</div>":"")+
             (tieneOferta?"<div style='font-size:0.8rem;color:var(--text-muted);text-decoration:line-through'>Q"+p.price.toFixed(2)+"</div>":"")+
             "<div class='product-price' style='"+(tieneOferta?"color:var(--red)":"")+"'>Q"+precio.toFixed(2)+"</div>"+
+            (mayoreoTipo==="fardo"&&parseFloat(p.precio_fardo)>0&&(parseInt(p.unidades_fardo,10)||0)>0?"<div style='font-size:0.72rem;color:var(--orange);font-weight:700'>🎁 Trae "+parseInt(p.unidades_fardo,10)+" uds</div>":"")+
             "<div class='product-stock-label'>"+(avail?"Stock: "+p.stock:"Agotado")+"</div>"+
           "</div>"+
           "<div class='product-card-actions'>"+
@@ -1775,6 +1783,13 @@ function changeQty(id,delta){
   if(ci.qty<=0) cart=cart.filter(x=>x.id!==id);
   else if(p&&ci.qty>p.stock){ci.qty=p.stock;toast("Máximo disponible: "+p.stock,"error");}
   saveCart(); updateCartCount(); renderCart();
+}
+function setQty(id,val){
+  const ci=cart.find(x=>x.id===id), p=products.find(x=>x.id===id); if(!ci)return;
+  let v=parseInt(val,10);
+  if(isNaN(v)||v<1) v=1;
+  if(p&&v>p.stock){v=p.stock;toast("Máximo disponible: "+p.stock,"error");}
+  ci.qty=v; saveCart(); updateCartCount(); renderCart();
 }
 function removeFromCart(id){cart=cart.filter(x=>x.id!==id);saveCart();updateCartCount();renderCart();}
 function clearCart(){if(!cart.length)return;if(!confirm("¿Vaciar el carrito? Se eliminarán todos los productos."))return;cart=[];saveCart();updateCartCount();renderCart();toast("Carrito vaciado","success");}
@@ -1821,15 +1836,18 @@ function renderCart(){
     const p=products.find(x=>x.id===ci.id); if(!p)return"";
     const pu=getPrecioProducto(p), img=p.img||p.imgUrl;
     const tieneEspecial=tieneEspecialActivo(p);
+    const enFardo=mayoreoTipo==="fardo"&&parseFloat(p.precio_fardo)>0;
+    const uf=parseInt(p.unidades_fardo,10)||0;
     return "<div class='cart-item'>"+
       (img?"<img class='cart-item-img' src='"+img+"' onerror=\"this.style.display='none'\">":"<div class='cart-item-img' style='display:flex;align-items:center;justify-content:center;font-size:2rem'>🖼</div>")+
       "<div class='cart-item-info'>"+
         "<div class='cart-item-name'>"+p.name+"</div>"+
         (tieneEspecial?"<div style='font-size:0.8rem;color:var(--text-muted);text-decoration:line-through'>Q"+p.price.toFixed(2)+"</div>":"")+
         "<div class='cart-item-price'>Q"+pu.toFixed(2)+" c/u</div>"+
+        (enFardo&&uf>0?"<div style='font-size:0.78rem;color:var(--orange);font-weight:700;margin-top:0.15rem'>🎁 El fardo trae "+uf+" unidades</div>":"")+
         "<div class='qty-controls'>"+
           "<button class='qty-btn' onclick='changeQty("+p.id+",-1)'>−</button>"+
-          "<span class='qty-num'>"+ci.qty+"</span>"+
+          "<input type='number' class='qty-num-input' min='1' max='"+(p.stock||9999)+"' value='"+ci.qty+"' onchange='setQty("+p.id+",this.value)' onclick='this.select()'>"+
           "<button class='qty-btn' onclick='changeQty("+p.id+",1)'>+</button>"+
           "<button class='remove-btn' onclick='removeFromCart("+p.id+")'>Quitar</button>"+
         "</div>"+
@@ -2161,7 +2179,7 @@ function saveInventoryUpdate(){
 }
 function openAddModal(){
   editingId=null; document.getElementById("modalTitle").textContent="Agregar Producto";
-  ["fSku","fName","fCategoria","fDesc","fPrice","fOferta","fStock","fImgUrl","fImgData","fMediaDocena","fDocena","fFardo"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
+  ["fSku","fName","fCategoria","fDesc","fPrice","fOferta","fStock","fImgUrl","fImgData","fMediaDocena","fDocena","fFardo","fUnidFardo"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
   const opEl=document.getElementById("fMayoreoOperacion"); if(opEl) opEl.value="directo";
   document.getElementById("imgPreview").style.display="none";
   document.getElementById("precioPreview").textContent="";
@@ -2182,6 +2200,7 @@ function openEditModal(id){
   const md=document.getElementById("fMediaDocena"); if(md) md.value=(p.precio_media_docena||0)>0?p.precio_media_docena:"";
   const dc=document.getElementById("fDocena"); if(dc) dc.value=(p.precio_docena||0)>0?p.precio_docena:"";
   const fa=document.getElementById("fFardo"); if(fa) fa.value=(p.precio_fardo||0)>0?p.precio_fardo:"";
+  const uf=document.getElementById("fUnidFardo"); if(uf) uf.value=(p.unidades_fardo||0)>0?p.unidades_fardo:"";
   // Cargar imágenes múltiples
   if(p.images && p.images.length){
     _multiImgs = p.images.map(src=>({type: src.startsWith("data:")?"base64":"url", src}));
@@ -2249,7 +2268,8 @@ function saveProduct(){
   const precio_fardo=calcMayoreo(document.getElementById("fFardo")?.value);
   const precio_oferta=parseFloat(document.getElementById("fOferta")?.value)||0;
   const precio_mayoristas=precio_docena||precio_media_docena||precio_fardo||0;
-  const extras={precio_mayoristas,precio_media_docena,precio_docena,precio_fardo,precio_oferta};
+  const unidades_fardo=parseInt(document.getElementById("fUnidFardo")?.value,10)||0;
+  const extras={precio_mayoristas,precio_media_docena,precio_docena,precio_fardo,precio_oferta,unidades_fardo};
 
   // Collect final valid images (filter empty URLs)
   const validImgs = _multiImgs.filter(m=>m.src&&m.src.trim());
@@ -2592,7 +2612,7 @@ function exportInventoryCSV(){
   var q=(document.getElementById("adminSearch")?.value||"").toLowerCase().trim();
   var lista=q?products.filter(function(p){return p.name.toLowerCase().includes(q)||(p.sku||"").toLowerCase().includes(q);}):products;
   if(!lista.length){toast("No hay productos que coincidan con la búsqueda","error");return;}
-  var headers=["sku","nombre","precio","precio_oferta","precio_media_docena","precio_docena","precio_fardo","stock","descripcion","imgUrl","Categoría"];
+  var headers=["sku","nombre","precio","precio_oferta","precio_media_docena","precio_docena","precio_fardo","unidades_fardo","stock","descripcion","imgUrl","Categoría"];
   var rows=lista.map(function(p){
     return [
       fCSV(p.sku||""),
@@ -2602,6 +2622,7 @@ function exportInventoryCSV(){
       (p.precio_media_docena||0)>0?p.precio_media_docena:0,
       (p.precio_docena||0)>0?p.precio_docena:0,
       (p.precio_fardo||0)>0?p.precio_fardo:0,
+      (p.unidades_fardo||0)>0?p.unidades_fardo:0,
       p.stock||0,
       fCSV(p.desc||""),
       fCSV(p.imgUrl||""),
@@ -2646,6 +2667,7 @@ function importInventoryCSV(e){
         precio_media_docena:gi(["precio_media_docena","media_docena"]),
         precio_docena:gi(["precio_docena","docena","doc"]),
         precio_fardo:gi(["precio_fardo","fardo"]),
+        unidades_fardo:gi(["unidades_fardo","unidades_por_fardo","uds_fardo"]),
         stock:header.indexOf("stock"),
         desc:gi(["descripcion","desc"]),
         imgUrl:gi(["imgurl","img_url","imagen"]),
@@ -2667,12 +2689,13 @@ function importInventoryCSV(e){
         var precio_media_docena=idx.precio_media_docena>=0?parseFloat(cols[idx.precio_media_docena])||0:0;
         var precio_docena=idx.precio_docena>=0?parseFloat(cols[idx.precio_docena])||0:0;
         var precio_fardo=idx.precio_fardo>=0?parseFloat(cols[idx.precio_fardo])||0:0;
+        var unidades_fardo=idx.unidades_fardo>=0?parseInt(cols[idx.unidades_fardo])||0:0;
         var precio_mayoristas=precio_docena||precio_media_docena||precio_fardo||0;
         var ex=sku
           ? products.find(function(p){return p.sku&&p.sku.trim()===sku.trim();})||products.find(function(p){return p.name.toLowerCase().trim()===name.toLowerCase().trim();})
           : products.find(function(p){return p.name.toLowerCase().trim()===name.toLowerCase().trim();});
-        if(ex){Object.assign(ex,{sku:sku,name:name,price:price,stock:stock,desc:desc,imgUrl:imgUrl||ex.imgUrl||"",categoria:categoria,precio_oferta:precio_oferta,precio_media_docena:precio_media_docena,precio_docena:precio_docena,precio_fardo:precio_fardo,precio_mayoristas:precio_mayoristas});updated++;}
-        else{products.push({id:nextId(),sku:sku,name:name,price:price,stock:stock,desc:desc,img:"",imgUrl:imgUrl,categoria:categoria,precio_oferta:precio_oferta,precio_media_docena:precio_media_docena,precio_docena:precio_docena,precio_fardo:precio_fardo,precio_mayoristas:precio_mayoristas});added++;}
+        if(ex){Object.assign(ex,{sku:sku,name:name,price:price,stock:stock,desc:desc,imgUrl:imgUrl||ex.imgUrl||"",categoria:categoria,precio_oferta:precio_oferta,precio_media_docena:precio_media_docena,precio_docena:precio_docena,precio_fardo:precio_fardo,unidades_fardo:unidades_fardo,precio_mayoristas:precio_mayoristas});updated++;}
+        else{products.push({id:nextId(),sku:sku,name:name,price:price,stock:stock,desc:desc,img:"",imgUrl:imgUrl,categoria:categoria,precio_oferta:precio_oferta,precio_media_docena:precio_media_docena,precio_docena:precio_docena,precio_fardo:precio_fardo,unidades_fardo:unidades_fardo,precio_mayoristas:precio_mayoristas});added++;}
       }
       sortProductsAZ(); saveProducts();renderAdminProducts();populateInventorySelect();renderShop();
       toast("Importado: "+added+" nuevos, "+updated+" actualizados","success");
@@ -3018,6 +3041,15 @@ function openProductDetail(id) {
   priceEl.textContent = "Q"+precio.toFixed(2);
   priceEl.style.color = tieneOferta ? "var(--red)" : "var(--accent)";
 
+  const fardoInfoEl = document.getElementById("pdFardoInfo2");
+  const uf = parseInt(p.unidades_fardo,10)||0;
+  if (mayoreoTipo==="fardo" && parseFloat(p.precio_fardo)>0 && uf>0) {
+    fardoInfoEl.textContent = "🎁 El fardo trae "+uf+" unidades";
+    fardoInfoEl.style.display = "block";
+  } else {
+    fardoInfoEl.style.display = "none";
+  }
+
   const stockEl = document.getElementById("pdStock2");
   if (avail) { stockEl.textContent = "✓ En existencia ("+p.stock+" disponibles)"; stockEl.style.color = "var(--green)"; }
   else { stockEl.textContent = "✗ Agotado"; stockEl.style.color = "var(--red)"; }
@@ -3310,6 +3342,7 @@ function downloadAldeaTemplate(){
     <hr class="pd-divider">
     <div class="pd-price2-old" id="pdPriceOld2" style="display:none"></div>
     <div class="pd-price2" id="pdPrice2"></div>
+    <div id="pdFardoInfo2" style="display:none;font-size:0.85rem;color:var(--orange);font-weight:700;margin-top:0.2rem"></div>
     <div class="pd-avail" id="pdStock2"></div>
     <div class="pd-desc2" id="pdDesc2"></div>
   </div>
