@@ -1746,7 +1746,7 @@ function renderShop(){
             (tieneEspecial?"<div style='font-size:0.8rem;color:var(--text-muted);text-decoration:line-through'>Q"+p.price.toFixed(2)+"</div>":"")+
             (tieneOferta?"<div style='font-size:0.8rem;color:var(--text-muted);text-decoration:line-through'>Q"+p.price.toFixed(2)+"</div>":"")+
             "<div class='product-price' style='"+(tieneOferta?"color:var(--red)":"")+"'>Q"+precio.toFixed(2)+"</div>"+
-            (mayoreoTipo==="fardo"&&parseFloat(p.precio_fardo)>0&&(parseInt(p.unidades_fardo,10)||0)>0?"<div style='font-size:0.72rem;color:var(--orange);font-weight:700'>🎁 Trae "+parseInt(p.unidades_fardo,10)+" uds</div>":"")+
+            (mayoreoTipo==="fardo"&&parseFloat(p.precio_fardo)>0&&(parseInt(p.unidades_fardo,10)||0)>0?"<div style='font-size:0.72rem;color:var(--orange);font-weight:700'>🎁 FARDO "+parseInt(p.unidades_fardo,10)+"UDS</div>":"")+
             "<div class='product-stock-label'>"+(avail?"Stock: "+p.stock:"Agotado")+"</div>"+
           "</div>"+
           "<div class='product-card-actions'>"+
@@ -1844,7 +1844,7 @@ function renderCart(){
         "<div class='cart-item-name'>"+p.name+"</div>"+
         (tieneEspecial?"<div style='font-size:0.8rem;color:var(--text-muted);text-decoration:line-through'>Q"+p.price.toFixed(2)+"</div>":"")+
         "<div class='cart-item-price'>Q"+pu.toFixed(2)+" c/u</div>"+
-        (enFardo&&uf>0?"<div style='font-size:0.78rem;color:var(--orange);font-weight:700;margin-top:0.15rem'>🎁 El fardo trae "+uf+" unidades</div>":"")+
+        (enFardo&&uf>0?"<div style='font-size:0.78rem;color:var(--orange);font-weight:700;margin-top:0.15rem'>🎁 FARDO "+uf+"UDS</div>":"")+
         "<div class='qty-controls'>"+
           "<button class='qty-btn' onclick='changeQty("+p.id+",-1)'>−</button>"+
           "<input type='number' class='qty-num-input' min='1' max='"+(p.stock||9999)+"' value='"+ci.qty+"' onchange='setQty("+p.id+",this.value)' onclick='this.select()'>"+
@@ -3044,7 +3044,7 @@ function openProductDetail(id) {
   const fardoInfoEl = document.getElementById("pdFardoInfo2");
   const uf = parseInt(p.unidades_fardo,10)||0;
   if (mayoreoTipo==="fardo" && parseFloat(p.precio_fardo)>0 && uf>0) {
-    fardoInfoEl.textContent = "🎁 El fardo trae "+uf+" unidades";
+    fardoInfoEl.textContent = "🎁 FARDO "+uf+"UDS";
     fardoInfoEl.style.display = "block";
   } else {
     fardoInfoEl.style.display = "none";
