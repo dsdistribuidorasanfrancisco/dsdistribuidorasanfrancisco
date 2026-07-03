@@ -414,15 +414,25 @@ body { font-family: "Inter", sans-serif; background: var(--bg); color: var(--dar
 h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sans-serif; }
 
 /* Floating Navbar */
-.navbar { position: sticky; top: 15px; z-index: 100; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 0.6rem 1.2rem; display: flex; align-items: center; justify-content: space-between; max-width: 1100px; margin: 0 auto 2rem; border-radius: 100px; box-shadow: var(--shadow-sm); border: 1px solid rgba(255,255,255,0.6); gap: 1rem; }
+.navbar { position: sticky; top: 15px; z-index: 100; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 0.6rem 1.2rem; display: flex; align-items: center; justify-content: space-between; max-width: 1100px; margin: 0 auto 2rem; border-radius: 100px; box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08); border: 1px solid rgba(255,255,255,0.6); gap: 1rem; }
 .nav-logo { display: flex; align-items: center; gap: 0.5rem; color: var(--dark); font-size: 1.25rem; font-weight: 800; letter-spacing: -0.5px; white-space: nowrap; flex-shrink: 0; }
 .nav-logo img { height: 32px; object-fit: contain; border-radius: 6px; display: none; }
 .nav-links { display: flex; gap: 0.4rem; align-items: center; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; padding-bottom: 2px; }
 .nav-links::-webkit-scrollbar { display: none; }
-.nav-btn { background: transparent; border: none; color: var(--text-muted); font-family: "Inter", sans-serif; font-size: 0.9rem; font-weight: 600; padding: 0.6rem 1.2rem; border-radius: 100px; cursor: pointer; white-space: nowrap; position: relative; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
-.nav-btn:hover { color: var(--dark); background: #f1f5f9; }
-.nav-btn.active { background: var(--dark); color: #fff; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2); }
-.cart-badge { position: absolute; top: -2px; right: -2px; background: var(--gradient-primary); color: #fff; border-radius: 50%; width: 18px; height: 18px; font-size: 0.65rem; display: flex; align-items: center; justify-content: center; font-weight: 700; box-shadow: 0 2px 4px rgba(236, 72, 153, 0.3); border: 2px solid #fff; }
+.nav-btn { background: #f8fafc; border: 1px solid transparent; color: var(--dark-soft); font-family: "Inter", sans-serif; font-size: 0.9rem; font-weight: 600; width: 46px; height: 46px; padding: 0; border-radius: 14px; cursor: pointer; white-space: nowrap; position: relative; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.nav-emoji { font-size: 1.35rem; line-height: 1; display: block; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.3s ease; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.15)); }
+.nav-btn::after { content: attr(title); position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%) translateY(-4px); background: var(--dark); color: #fff; font-size: 0.7rem; font-weight: 700; padding: 0.35rem 0.7rem; border-radius: 8px; white-space: nowrap; opacity: 0; pointer-events: none; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 10; }
+.nav-btn:hover::after { opacity: 1; transform: translateX(-50%) translateY(0); }
+.nav-btn:hover { background: var(--green-soft); transform: translateY(-3px); box-shadow: 0 6px 14px rgba(4, 158, 13, 0.18); }
+.nav-btn:hover .nav-emoji { transform: scale(1.2) rotate(-6deg); }
+.nav-btn:active { transform: translateY(-1px) scale(0.95); }
+.nav-btn:active .nav-emoji { transform: scale(0.9); }
+.nav-btn.active { background: var(--gradient-primary); border-color: transparent; box-shadow: 0 6px 16px rgba(4, 158, 13, 0.35), 0 0 0 3px rgba(50, 255, 0, 0.12); }
+.nav-btn.active:hover { transform: translateY(-3px) scale(1.04); }
+.nav-btn.active .nav-emoji { filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25)); }
+.nav-btn.active::before { content: ""; position: absolute; inset: -3px; border-radius: 16px; background: var(--gradient-primary); opacity: 0.35; filter: blur(6px); z-index: -1; }
+.cart-badge { position: absolute; top: -3px; right: -3px; background: linear-gradient(135deg, #fb7185, #ef4444); color: #fff; border-radius: 50%; width: 18px; height: 18px; font-size: 0.62rem; display: flex; align-items: center; justify-content: center; font-weight: 800; box-shadow: 0 2px 6px rgba(239, 68, 68, 0.5); border: 2px solid #fff; animation: badgePop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+@keyframes badgePop { 0% { transform: scale(0); } 70% { transform: scale(1.2); } 100% { transform: scale(1); } }
 .sync-indicator { display: flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; color: var(--text-muted); margin-left: 0.5rem; background: #f1f5f9; padding: 0.4rem 0.8rem; border-radius: 100px; white-space: nowrap; }
 .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); flex-shrink: 0; box-shadow: 0 0 8px var(--green); }
 
@@ -749,7 +759,9 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
   .navbar { border-radius: 0; margin: 0; top: 0; padding: 0.8rem 1rem; gap: 0.5rem; flex-direction: column; align-items: flex-start; }
   .nav-logo { font-size: 1.2rem; margin-bottom: 0.3rem; }
   .nav-links { width: 100%; justify-content: flex-start; gap: 0.5rem; }
-  .nav-btn { font-size: 0.85rem; padding: 0.5rem 1rem; }
+  .nav-btn { width: 42px; height: 42px; border-radius: 12px; }
+  .nav-emoji { font-size: 1.2rem; }
+  .nav-btn::after { display: none; }
   .sync-indicator { margin-left: auto; }
 
   /* Contenedor General */
@@ -890,17 +902,26 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
     <span id="storeNameEl">DS Distribuidora San Francisco</span>
   </div>
   <div class="nav-links">
-    <button class="nav-btn active" onclick="showPage('shop')">Tienda</button>
-    <button class="nav-btn" onclick="showPage('cart')">
-      Carrito
+    <button class="nav-btn active" onclick="showPage('shop')" title="Tienda" aria-label="Tienda">
+      <span class="nav-emoji">🏬</span>
+    </button>
+    <button class="nav-btn" onclick="showPage('cart')" title="Carrito" aria-label="Carrito">
+      <span class="nav-emoji">🛒</span>
       <span class="cart-badge" id="cartBadge" style="display:none">0</span>
     </button>
-    <button class="nav-btn" onclick="showPage('track')">Pedidos</button>
-    <button class="nav-btn" id="adminLoginBtn" onclick="showPage('admin-login')">Admin</button>
-    <button class="nav-btn" id="adminNavBtn" onclick="showPage('admin')" style="display:none">Panel</button>
-    <button class="nav-btn" id="clientNavBtn" onclick="showPage('client-login')" style="display:flex;align-items:center;gap:0.35rem">
+    <button class="nav-btn" onclick="showPage('track')" title="Pedidos" aria-label="Pedidos">
+      <span class="nav-emoji">🚚</span>
+    </button>
+    <button class="nav-btn" id="adminLoginBtn" onclick="showPage('admin-login')" title="Admin" aria-label="Admin">
+      <span class="nav-emoji">🔐</span>
+    </button>
+    <button class="nav-btn" id="adminNavBtn" onclick="showPage('admin')" style="display:none" title="Panel" aria-label="Panel">
+      <span class="nav-emoji">📊</span>
+    </button>
+    <button class="nav-btn" id="clientNavBtn" onclick="showPage('client-login')" style="display:flex;align-items:center;justify-content:center" title="Mi Cuenta" aria-label="Mi Cuenta">
       <span id="clientNavAvatar" style="display:none;width:22px;height:22px;border-radius:50%;object-fit:cover;overflow:hidden;background:var(--accent);color:#fff;font-size:0.7rem;font-weight:800;align-items:center;justify-content:center;flex-shrink:0"></span>
-      <span id="clientNavLabel">Mi Cuenta</span>
+      <span id="clientNavIcon" class="nav-emoji">👤</span>
+      <span id="clientNavLabel" style="display:none">Mi Cuenta</span>
     </button>
     <div class="sync-indicator">
       <div class="sync-dot" id="syncDot"></div>
@@ -3477,6 +3498,7 @@ document.addEventListener("DOMContentLoaded", () => {
 function updateClientNavbar() {
   const label = document.getElementById("clientNavLabel");
   const avatar = document.getElementById("clientNavAvatar");
+  const icon = document.getElementById("clientNavIcon");
   const btn = document.getElementById("clientNavBtn");
   if (_client) {
     if (label) label.textContent = (_client.name||"Mi Cuenta").split(" ")[0];
@@ -3484,10 +3506,12 @@ function updateClientNavbar() {
       avatar.style.display = "flex";
       avatar.innerHTML = _client.photo ? `<img src="${_client.photo}" style="width:22px;height:22px;border-radius:50%;object-fit:cover">` : (_client.name||"?").charAt(0).toUpperCase();
     }
+    if (icon) icon.style.display = "none";
     if (btn) btn.onclick = () => { showPage("client-dashboard"); loadClientDashboard(); };
   } else {
     if (label) label.textContent = "Mi Cuenta";
     if (avatar) avatar.style.display = "none";
+    if (icon) icon.style.display = "";
     if (btn) btn.onclick = () => showPage("client-login");
   }
 }
