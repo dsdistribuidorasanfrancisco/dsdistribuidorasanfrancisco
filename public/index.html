@@ -410,7 +410,9 @@ setInterval(() => {
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: "Inter", sans-serif; background: var(--bg); color: var(--dark); min-height: 100vh; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
+html { overflow-x: hidden; width: 100%; }
+body { font-family: "Inter", sans-serif; background: var(--bg); color: var(--dark); min-height: 100vh; overflow-x: hidden; width: 100%; -webkit-tap-highlight-color: transparent; }
+img { max-width: 100%; }
 h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sans-serif; }
 
 /* Floating Navbar */
@@ -794,11 +796,13 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
 
   /* Carrito de Compras */
   .cart-container { gap: 1rem; }
-  .cart-item { flex-direction: column; align-items: flex-start; padding: 0; gap: 0; position: relative; overflow: hidden; }
-  .cart-item-img { width: 100%; height: 200px; border-radius: 0; border-top-left-radius: var(--radius-md); border-top-right-radius: var(--radius-md); object-fit: cover; display: block; }
-  .cart-item-info { width: 100%; padding: 1rem; }
-  .cart-total-price { position: absolute; bottom: 1rem; right: 1rem; font-size: 1.1rem; }
-  .qty-controls { margin-top: 1rem; }
+  .cart-item { flex-direction: row; flex-wrap: wrap; align-items: flex-start; padding: 0.9rem; gap: 0.8rem; position: relative; }
+  .cart-item-img { width: clamp(64px, 24vw, 110px); height: clamp(64px, 24vw, 110px); border-radius: var(--radius-sm); object-fit: cover; display: block; flex-shrink: 0; }
+  .cart-item-info { flex: 1 1 0; min-width: 0; padding: 0; }
+  .cart-item-name { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: clamp(0.85rem, 3.6vw, 1rem); line-height: 1.25; }
+  .cart-item-price { font-size: clamp(0.85rem, 3.2vw, 0.95rem); }
+  .cart-total-price { position: static; width: 100%; text-align: right; margin-top: 0.4rem; font-size: clamp(0.95rem, 3.8vw, 1.1rem); order: 3; }
+  .qty-controls { margin-top: 0.8rem; flex-wrap: wrap; }
   .qty-btn { width: 36px; height: 36px; font-size: 1.2rem; }
   
   .cart-summary { padding: 1.2rem; position: static; margin-top: 1rem; }
@@ -1318,6 +1322,16 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
         <button class="btn btn-ghost" onclick="exportAldeaData()">⬇ Exportar geodata CSV</button>
         <button class="btn btn-ghost" style="color:#e11d48;border-color:#fecdd3" onclick="clearAldeaData()">🗑 Borrar toda la geodata</button>
       </div>
+
+      <div style="border-top:1px solid var(--border);margin:1.6rem 0 1.2rem"></div>
+      <h4 style="margin-bottom:0.4rem">📋 Departamentos, municipios y lugares</h4>
+      <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:1rem">
+        Aquí aparece todo lo registrado, incluyendo lo que los compradores agregan desde el checkout cuando su lugar no aparece en la lista. Puedes editar o eliminar cualquier entrada.
+      </p>
+      <div class="form-group" style="margin-bottom:1rem">
+        <input type="text" id="aldeaListSearch" placeholder="🔎 Buscar departamento, municipio o lugar..." oninput="renderAldeaList()">
+      </div>
+      <div id="aldeaListCont"></div>
     </div>
   </div>
 </div>
@@ -1389,9 +1403,30 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
     <h3>Confirmar Pedido</h3>
     <div class="form-group"><label>Nombre Completo *</label><input type="text" id="buyerName" placeholder="Tu nombre completo"></div>
     <div class="form-group"><label>Contacto (teléfono o email) *</label><input type="text" id="buyerContact" placeholder="5555-1234"></div>
-    <div class="form-group"><label>Departamento *</label><select id="buyerDept" onchange="loadMunicipios()"><option value="">Selecciona</option></select></div>
-    <div class="form-group"><label>Municipio *</label><select id="buyerMun" onchange="onBuyerMunChange()"><option value="">Selecciona dept. primero</option></select></div>
-    <div class="form-group"><label>Lugar <span style="font-size:0.78rem;font-weight:400;color:var(--text-muted)">(opcional)</span></label><select id="buyerAldea" onchange="updateCheckoutTotal()" style="width:100%"><option value="">Todo el municipio / Cabecera</option></select></div>
+    <div class="form-group">
+      <label>Departamento *</label>
+      <select id="buyerDept" onchange="loadMunicipios()"><option value="">Selecciona</option></select>
+      <div id="buyerDeptNewBox" style="display:none;gap:0.5rem;margin-top:0.5rem">
+        <input type="text" id="buyerDeptNew" placeholder="Escribe tu departamento" style="flex:1">
+        <button type="button" class="btn btn-ghost" style="white-space:nowrap" onclick="confirmNewDept()">Agregar</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Municipio *</label>
+      <select id="buyerMun" onchange="onBuyerMunChange()"><option value="">Selecciona dept. primero</option></select>
+      <div id="buyerMunNewBox" style="display:none;gap:0.5rem;margin-top:0.5rem">
+        <input type="text" id="buyerMunNew" placeholder="Escribe tu municipio" style="flex:1">
+        <button type="button" class="btn btn-ghost" style="white-space:nowrap" onclick="confirmNewMun()">Agregar</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Lugar <span style="font-size:0.78rem;font-weight:400;color:var(--text-muted)">(opcional)</span></label>
+      <select id="buyerAldea" onchange="onBuyerAldeaChange()" style="width:100%"><option value="">Todo el municipio / Cabecera</option></select>
+      <div id="buyerAldeaNewBox" style="display:none;gap:0.5rem;margin-top:0.5rem">
+        <input type="text" id="buyerAldeaNew" placeholder="Escribe tu lugar/colonia/aldea" style="flex:1">
+        <button type="button" class="btn btn-ghost" style="white-space:nowrap" onclick="confirmNewAldea()">Agregar</button>
+      </div>
+    </div>
     <div class="form-group"><label>Dirección (opcional)</label><input type="text" id="buyerAddress" placeholder="Calle, colonia, referencia..."></div>
     <div class="form-group"><label>Notas (opcional)</label><textarea id="buyerNotes" placeholder="Instrucciones especiales..."></textarea></div>
     <div id="checkoutItemsDiv" class="checkout-items-summary"></div>
@@ -1657,12 +1692,78 @@ function applyStoreSettings(){
 }
 
 function populateDeptSelects(){
-  const depts=Object.keys(GT_DATA);
+  const depts=Object.keys(GT_DATA).sort((a,b)=>a.localeCompare(b,'es'));
   ["buyerDept","shippingDept","psDept"].forEach(selId=>{
     const sel=document.getElementById(selId); if(!sel)return;
+    const cur=sel.value;
     sel.innerHTML="<option value=''>Selecciona</option>";
     depts.forEach(d=>{const o=document.createElement("option");o.value=d;o.textContent=d;sel.appendChild(o);});
+    if(selId==="buyerDept"){const o=document.createElement("option");o.value="__new__";o.textContent="➕ Mi departamento no aparece";sel.appendChild(o);}
+    if(cur && [...sel.options].some(o=>o.value===cur)) sel.value=cur;
   });
+}
+
+// Guarda GT_DATA/GT_ALDEAS completos en Firebase (mismo patrón que usa el admin al importar CSV)
+function saveGeoDataMerge(){
+  if(window._fb && window._fb.ready()){
+    window._fb.saveGeoData({departamentos:GT_DATA,aldeas:GT_ALDEAS});
+  }
+}
+
+function confirmNewDept(){
+  const input=document.getElementById("buyerDeptNew");
+  const val=input.value.trim();
+  if(!val){toast("Escribe el nombre de tu departamento","error");return;}
+  if(!GT_DATA[val]) GT_DATA[val]=[];
+  saveGeoDataMerge();
+  populateDeptSelects();
+  document.getElementById("buyerDept").value=val;
+  document.getElementById("buyerDeptNewBox").style.display="none";
+  input.value="";
+  loadMunicipios();
+  toast("Departamento agregado ✓","success");
+}
+
+function confirmNewMun(){
+  const dept=document.getElementById("buyerDept").value;
+  if(!dept||dept==="__new__"){toast("Primero agrega o selecciona el departamento","error");return;}
+  const input=document.getElementById("buyerMunNew");
+  const val=input.value.trim();
+  if(!val){toast("Escribe el nombre de tu municipio","error");return;}
+  if(!GT_DATA[dept]) GT_DATA[dept]=[];
+  if(!GT_DATA[dept].includes(val)) GT_DATA[dept].push(val);
+  saveGeoDataMerge();
+  const munSel=document.getElementById("buyerMun");
+  munSel.innerHTML="<option value=''>Selecciona municipio</option>";
+  GT_DATA[dept].slice().sort((a,b)=>a.localeCompare(b,'es')).forEach(m=>{const o=document.createElement("option");o.value=m;o.textContent=m;munSel.appendChild(o);});
+  const o=document.createElement("option");o.value="__new__";o.textContent="➕ Mi municipio no aparece";munSel.appendChild(o);
+  munSel.value=val;
+  document.getElementById("buyerMunNewBox").style.display="none";
+  input.value="";
+  onBuyerMunChange();
+  toast("Municipio agregado ✓","success");
+}
+
+function confirmNewAldea(){
+  const dept=document.getElementById("buyerDept").value;
+  const mun=document.getElementById("buyerMun").value;
+  if(!dept||!mun||mun==="__new__"){toast("Primero agrega o selecciona el municipio","error");return;}
+  const input=document.getElementById("buyerAldeaNew");
+  const val=input.value.trim();
+  if(!val){toast("Escribe el nombre de tu lugar","error");return;}
+  if(!GT_ALDEAS[dept]) GT_ALDEAS[dept]={};
+  if(!GT_ALDEAS[dept][mun]) GT_ALDEAS[dept][mun]=[];
+  if(!GT_ALDEAS[dept][mun].includes(val)) GT_ALDEAS[dept][mun].push(val);
+  saveGeoDataMerge();
+  const asel=document.getElementById("buyerAldea");
+  asel.innerHTML="<option value=''>Todo el municipio / Cabecera</option>";
+  GT_ALDEAS[dept][mun].slice().sort((a,b)=>a.localeCompare(b,'es')).forEach(a=>{const o=document.createElement("option");o.value=a;o.textContent=a;asel.appendChild(o);});
+  const o2=document.createElement("option");o2.value="__new__";o2.textContent="➕ Mi lugar no aparece";asel.appendChild(o2);
+  asel.value=val;
+  document.getElementById("buyerAldeaNewBox").style.display="none";
+  input.value="";
+  updateCheckoutTotal();
+  toast("Lugar agregado ✓","success");
 }
 
 function showPage(name){
@@ -1955,20 +2056,38 @@ function updateCheckoutTotal(){
 }
 function loadMunicipios(){
   const dept=document.getElementById("buyerDept").value;
+  const deptBox=document.getElementById("buyerDeptNewBox");
+  if(deptBox) deptBox.style.display = dept==="__new__" ? "flex" : "none";
   const munSel=document.getElementById("buyerMun");
   munSel.innerHTML="<option value=''>Selecciona municipio</option>";
-  if(dept&&GT_DATA[dept]) GT_DATA[dept].forEach(m=>{const o=document.createElement("option");o.value=m;o.textContent=m;munSel.appendChild(o);});
+  if(dept&&dept!=="__new__"&&GT_DATA[dept]){
+    GT_DATA[dept].slice().sort((a,b)=>a.localeCompare(b,'es')).forEach(m=>{const o=document.createElement("option");o.value=m;o.textContent=m;munSel.appendChild(o);});
+    const o=document.createElement("option");o.value="__new__";o.textContent="➕ Mi municipio no aparece";munSel.appendChild(o);
+  }
+  const munBox=document.getElementById("buyerMunNewBox"); if(munBox) munBox.style.display="none";
   const asel=document.getElementById("buyerAldea");if(asel){asel.innerHTML="<option value=''>Todo el municipio / Cabecera</option>";}
+  const aldeaBox=document.getElementById("buyerAldeaNewBox"); if(aldeaBox) aldeaBox.style.display="none";
   renderCheckoutPaymentMethods();
   updateCheckoutTotal();
 }
 function onBuyerMunChange(){
   const dept=document.getElementById("buyerDept")?.value||"", mun=document.getElementById("buyerMun")?.value||"";
+  const munBox=document.getElementById("buyerMunNewBox");
+  if(munBox) munBox.style.display = mun==="__new__" ? "flex" : "none";
   const asel=document.getElementById("buyerAldea"); if(!asel)return;
   asel.innerHTML="<option value=''>Todo el municipio / Cabecera</option>";
-  const aldeas=(GT_ALDEAS[dept]&&GT_ALDEAS[dept][mun])||[];
-  aldeas.forEach(a=>{const o=document.createElement("option");o.value=a;o.textContent=a;asel.appendChild(o);});
+  if(mun&&mun!=="__new__"){
+    const aldeas=((GT_ALDEAS[dept]&&GT_ALDEAS[dept][mun])||[]).slice().sort((a,b)=>a.localeCompare(b,'es'));
+    aldeas.forEach(a=>{const o=document.createElement("option");o.value=a;o.textContent=a;asel.appendChild(o);});
+    const o=document.createElement("option");o.value="__new__";o.textContent="➕ Mi lugar no aparece";asel.appendChild(o);
+  }
+  const aldeaBox=document.getElementById("buyerAldeaNewBox"); if(aldeaBox) aldeaBox.style.display="none";
   renderCheckoutPaymentMethods();
+  updateCheckoutTotal();
+}
+function onBuyerAldeaChange(){
+  const val=document.getElementById("buyerAldea")?.value||"";
+  const aldeaBox=document.getElementById("buyerAldeaNewBox"); if(aldeaBox) aldeaBox.style.display = val==="__new__" ? "flex" : "none";
   updateCheckoutTotal();
 }
 function placeOrder(){
@@ -1979,6 +2098,8 @@ function placeOrder(){
   const address=document.getElementById("buyerAddress").value.trim();
   const notes=document.getElementById("buyerNotes").value.trim();
   if(!name||!contact||!dept||!mun){toast("Completa todos los campos requeridos (*)","error");return;}
+  if(dept==="__new__"||mun==="__new__"){toast("Presiona 'Agregar' para confirmar tu departamento/municipio nuevo","error");return;}
+  if(document.getElementById("buyerAldea")?.value==="__new__"){toast("Presiona 'Agregar' para confirmar tu lugar nuevo","error");return;}
   const selectedPayment=getSelectedPaymentMethod();
   if(!selectedPayment){toast("Selecciona un método de pago","error");return;}
   // Pickup store validation
@@ -2104,7 +2225,7 @@ function switchAdminTab(tab,el){
   if(tab==="orders") renderAdminOrders();
   if(tab==="store"){updateFbStatusBadge&&updateFbStatusBadge();populateDeptSelects();applyStoreSettings();}
   if(tab==="shipping"){populateDeptSelects();renderShippingZones();}
-  if(tab==="aldeas") renderAldeaStats();
+  if(tab==="aldeas"){renderAldeaStats();renderAldeaList();}
 }
 
 function renderAdminDashboard(){
@@ -3184,6 +3305,164 @@ function renderAldeaStats(){
   </div>`;
 }
 
+/* ─── LISTA EDITABLE DE GEODATA (ver / editar / eliminar) ─── */
+function escGeo(s){
+  return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function geoAllDepts(){
+  return Array.from(new Set([...Object.keys(GT_DATA||{}),...Object.keys(GT_ALDEAS||{})])).sort((a,b)=>a.localeCompare(b,'es'));
+}
+function geoAllMuns(dept){
+  const fromData=GT_DATA[dept]||[];
+  const fromAldeas=Object.keys(GT_ALDEAS[dept]||{});
+  return Array.from(new Set([...fromData,...fromAldeas])).sort((a,b)=>a.localeCompare(b,'es'));
+}
+function renderAldeaList(){
+  const cont=document.getElementById("aldeaListCont"); if(!cont)return;
+  const q=(document.getElementById("aldeaListSearch")?.value||"").toLowerCase().trim();
+  const depts=geoAllDepts();
+  let html="";
+  depts.forEach(dept=>{
+    const muns=geoAllMuns(dept);
+    const deptMatches=!q||dept.toLowerCase().includes(q);
+    const munsToShow=muns.filter(mun=>{
+      if(!q||deptMatches) return true;
+      const lugares=(GT_ALDEAS[dept]&&GT_ALDEAS[dept][mun])||[];
+      return mun.toLowerCase().includes(q)||lugares.some(l=>l.toLowerCase().includes(q));
+    });
+    if(q&&!deptMatches&&!munsToShow.length) return;
+    html+='<div style="border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:0.8rem;overflow:hidden">'+
+      '<div style="display:flex;align-items:center;gap:0.5rem;padding:0.7rem 0.9rem;background:var(--bg);flex-wrap:wrap">'+
+        '<strong style="font-size:0.95rem">📍 '+escGeo(dept)+'</strong>'+
+        '<span style="font-size:0.78rem;color:var(--text-muted)">'+munsToShow.length+' municipio(s)</span>'+
+        '<div style="display:flex;gap:0.4rem;margin-left:auto">'+
+          '<button class="btn btn-ghost" style="padding:0.3rem 0.6rem;font-size:0.78rem" data-act="renameDept" data-dept="'+escGeo(dept)+'">✏️</button>'+
+          '<button class="btn btn-ghost" style="padding:0.3rem 0.6rem;font-size:0.78rem;color:#e11d48;border-color:#fecdd3" data-act="deleteDept" data-dept="'+escGeo(dept)+'">🗑</button>'+
+        '</div>'+
+      '</div>'+
+      '<div style="padding:0.7rem 0.9rem">'+
+      (munsToShow.length?munsToShow.map(mun=>{
+        const lugares=((GT_ALDEAS[dept]&&GT_ALDEAS[dept][mun])||[]).slice().sort((a,b)=>a.localeCompare(b,'es'));
+        return '<div style="margin-bottom:0.6rem;padding-bottom:0.6rem;border-bottom:1px dashed var(--border)">'+
+          '<div style="display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap">'+
+            '<span style="font-weight:600;font-size:0.86rem">🏘️ '+escGeo(mun)+'</span>'+
+            '<button class="btn btn-ghost" style="padding:0.15rem 0.45rem;font-size:0.72rem" data-act="renameMun" data-dept="'+escGeo(dept)+'" data-mun="'+escGeo(mun)+'">✏️</button>'+
+            '<button class="btn btn-ghost" style="padding:0.15rem 0.45rem;font-size:0.72rem;color:#e11d48;border-color:#fecdd3" data-act="deleteMun" data-dept="'+escGeo(dept)+'" data-mun="'+escGeo(mun)+'">🗑</button>'+
+            '<button class="btn btn-ghost" style="padding:0.15rem 0.45rem;font-size:0.72rem;margin-left:auto" data-act="addLugar" data-dept="'+escGeo(dept)+'" data-mun="'+escGeo(mun)+'">+ Lugar</button>'+
+          '</div>'+
+          (lugares.length?'<div style="display:flex;flex-wrap:wrap;gap:0.35rem;margin-top:0.5rem">'+
+            lugares.map(l=>'<span style="display:inline-flex;align-items:center;gap:0.15rem;background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:0.25rem 0.3rem 0.25rem 0.7rem;font-size:0.78rem">'+escGeo(l)+
+              '<button data-act="renameLugar" data-dept="'+escGeo(dept)+'" data-mun="'+escGeo(mun)+'" data-lugar="'+escGeo(l)+'" style="border:none;background:none;cursor:pointer;font-size:0.75rem;padding:0 0.15rem" title="Editar">✏️</button>'+
+              '<button data-act="deleteLugar" data-dept="'+escGeo(dept)+'" data-mun="'+escGeo(mun)+'" data-lugar="'+escGeo(l)+'" style="border:none;background:none;cursor:pointer;color:#e11d48;font-size:0.85rem;padding:0 0.2rem" title="Eliminar">✕</button>'+
+            '</span>').join("")+
+          '</div>':'<div style="font-size:0.78rem;color:var(--text-muted);margin-top:0.3rem">Sin lugares específicos</div>')+
+        '</div>';
+      }).join(""):'<div style="font-size:0.82rem;color:var(--text-muted)">Sin municipios</div>')+
+      '</div></div>';
+  });
+  cont.innerHTML=html||'<div style="text-align:center;color:var(--text-muted);padding:1.5rem;font-size:0.85rem">'+(q?"Sin resultados para tu búsqueda.":"No hay geodata registrada todavía.")+'</div>';
+  if(!cont._wired){
+    cont._wired=true;
+    cont.addEventListener("click",function(e){
+      const btn=e.target.closest("[data-act]"); if(!btn)return;
+      const act=btn.dataset.act, dept=btn.dataset.dept||"", mun=btn.dataset.mun||"", lugar=btn.dataset.lugar||"";
+      if(act==="renameDept") renameGeoDept(dept);
+      else if(act==="deleteDept") deleteGeoDept(dept);
+      else if(act==="renameMun") renameGeoMun(dept,mun);
+      else if(act==="deleteMun") deleteGeoMun(dept,mun);
+      else if(act==="addLugar") addGeoLugar(dept,mun);
+      else if(act==="renameLugar") renameGeoLugar(dept,mun,lugar);
+      else if(act==="deleteLugar") deleteGeoLugar(dept,mun,lugar);
+    });
+  }
+}
+function finishGeoEdit(){
+  saveGeoDataMerge();
+  populateDeptSelects();
+  renderAldeaStats();
+  renderAldeaList();
+}
+function renameGeoDept(dept){
+  const val=prompt("Nuevo nombre para el departamento:",dept);
+  if(val===null)return;
+  const nuevo=val.trim();
+  if(!nuevo||nuevo===dept)return;
+  if((GT_DATA[nuevo]||GT_ALDEAS[nuevo])&&!confirm('Ya existe "'+nuevo+'". ¿Combinar los datos en ese nombre?'))return;
+  GT_DATA[nuevo]=Array.from(new Set([...(GT_DATA[nuevo]||[]),...(GT_DATA[dept]||[])]));
+  delete GT_DATA[dept];
+  if(GT_ALDEAS[dept]){
+    GT_ALDEAS[nuevo]=GT_ALDEAS[nuevo]||{};
+    for(const mun in GT_ALDEAS[dept]){
+      GT_ALDEAS[nuevo][mun]=Array.from(new Set([...(GT_ALDEAS[nuevo][mun]||[]),...GT_ALDEAS[dept][mun]]));
+    }
+    delete GT_ALDEAS[dept];
+  }
+  finishGeoEdit();
+  toast("Departamento actualizado ✓","success");
+}
+function deleteGeoDept(dept){
+  if(!confirm('¿Eliminar el departamento "'+dept+'" y todos sus municipios/lugares? Esta acción no se puede deshacer.'))return;
+  delete GT_DATA[dept];
+  delete GT_ALDEAS[dept];
+  finishGeoEdit();
+  toast("Departamento eliminado ✓","success");
+}
+function renameGeoMun(dept,mun){
+  const val=prompt("Nuevo nombre para el municipio:",mun);
+  if(val===null)return;
+  const nuevo=val.trim();
+  if(!nuevo||nuevo===mun)return;
+  if(GT_DATA[dept]){
+    const idx=GT_DATA[dept].indexOf(mun);
+    if(!GT_DATA[dept].includes(nuevo)){ if(idx>=0) GT_DATA[dept][idx]=nuevo; else GT_DATA[dept].push(nuevo); }
+    else if(idx>=0) GT_DATA[dept].splice(idx,1);
+  }
+  if(GT_ALDEAS[dept]&&GT_ALDEAS[dept][mun]){
+    GT_ALDEAS[dept][nuevo]=Array.from(new Set([...(GT_ALDEAS[dept][nuevo]||[]),...GT_ALDEAS[dept][mun]]));
+    delete GT_ALDEAS[dept][mun];
+  }
+  finishGeoEdit();
+  toast("Municipio actualizado ✓","success");
+}
+function deleteGeoMun(dept,mun){
+  if(!confirm('¿Eliminar el municipio "'+mun+'" de '+dept+' y todos sus lugares?'))return;
+  if(GT_DATA[dept]) GT_DATA[dept]=GT_DATA[dept].filter(m=>m!==mun);
+  if(GT_ALDEAS[dept]) delete GT_ALDEAS[dept][mun];
+  finishGeoEdit();
+  toast("Municipio eliminado ✓","success");
+}
+function addGeoLugar(dept,mun){
+  const val=prompt('Nombre del nuevo lugar/colonia/aldea en '+mun+':',"");
+  if(val===null)return;
+  const nuevo=val.trim();
+  if(!nuevo)return;
+  if(!GT_ALDEAS[dept]) GT_ALDEAS[dept]={};
+  if(!GT_ALDEAS[dept][mun]) GT_ALDEAS[dept][mun]=[];
+  if(!GT_ALDEAS[dept][mun].includes(nuevo)) GT_ALDEAS[dept][mun].push(nuevo);
+  finishGeoEdit();
+  toast("Lugar agregado ✓","success");
+}
+function renameGeoLugar(dept,mun,lugar){
+  const val=prompt("Nuevo nombre para el lugar:",lugar);
+  if(val===null)return;
+  const nuevo=val.trim();
+  if(!nuevo||nuevo===lugar)return;
+  const arr=GT_ALDEAS[dept]&&GT_ALDEAS[dept][mun];
+  if(!arr)return;
+  const idx=arr.indexOf(lugar);
+  if(idx>=0){ if(!arr.includes(nuevo)) arr[idx]=nuevo; else arr.splice(idx,1); }
+  finishGeoEdit();
+  toast("Lugar actualizado ✓","success");
+}
+function deleteGeoLugar(dept,mun,lugar){
+  if(!confirm('¿Eliminar "'+lugar+'"?'))return;
+  const arr=GT_ALDEAS[dept]&&GT_ALDEAS[dept][mun];
+  if(!arr)return;
+  const idx=arr.indexOf(lugar);
+  if(idx>=0) arr.splice(idx,1);
+  finishGeoEdit();
+  toast("Lugar eliminado ✓","success");
+}
 function handleAldeaCsv(input){
   const file=input.files[0]; if(!file)return;
   window._pendingDepts={};
@@ -3257,6 +3536,7 @@ async function saveAldeaData(){
     document.getElementById("aldeaCsvStatus").style.display="none";
     document.getElementById("aldeaCsvInput").value="";
     renderAldeaStats();
+    renderAldeaList();
     toast("Geodata guardada en Firebase ☁️","success");
   }catch(e){toast("Error al guardar: "+((e&&e.message)||String(e)),"error");console.error(e);}
 }
@@ -3298,6 +3578,7 @@ async function clearAldeaData(){
     }
     try{ populateDeptSelects(); }catch(e2){}
     try{ renderAldeaStats(); }catch(e3){}
+    try{ renderAldeaList(); }catch(e4){}
     toast("Geodata borrada ✅","success");
   }catch(e){
     toast("Error al borrar en Firebase","error");
