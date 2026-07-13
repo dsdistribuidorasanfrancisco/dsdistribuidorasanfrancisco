@@ -1698,7 +1698,7 @@ function populateDeptSelects(){
     const cur=sel.value;
     sel.innerHTML="<option value=''>Selecciona</option>";
     depts.forEach(d=>{const o=document.createElement("option");o.value=d;o.textContent=d;sel.appendChild(o);});
-    if(selId==="buyerDept"){const o=document.createElement("option");o.value="__new__";o.textContent="➕ Mi departamento no aparece";sel.appendChild(o);}
+    if(selId==="buyerDept"){const o=document.createElement("option");o.value="__new__";o.textContent="Agregar departamento";sel.appendChild(o);}
     if(cur && [...sel.options].some(o=>o.value===cur)) sel.value=cur;
   });
 }
@@ -1736,7 +1736,7 @@ function confirmNewMun(){
   const munSel=document.getElementById("buyerMun");
   munSel.innerHTML="<option value=''>Selecciona municipio</option>";
   GT_DATA[dept].slice().sort((a,b)=>a.localeCompare(b,'es')).forEach(m=>{const o=document.createElement("option");o.value=m;o.textContent=m;munSel.appendChild(o);});
-  const o=document.createElement("option");o.value="__new__";o.textContent="➕ Mi municipio no aparece";munSel.appendChild(o);
+  const o=document.createElement("option");o.value="__new__";o.textContent="Agregar municipio";munSel.appendChild(o);
   munSel.value=val;
   document.getElementById("buyerMunNewBox").style.display="none";
   input.value="";
@@ -1758,7 +1758,7 @@ function confirmNewAldea(){
   const asel=document.getElementById("buyerAldea");
   asel.innerHTML="<option value=''>Todo el municipio / Cabecera</option>";
   GT_ALDEAS[dept][mun].slice().sort((a,b)=>a.localeCompare(b,'es')).forEach(a=>{const o=document.createElement("option");o.value=a;o.textContent=a;asel.appendChild(o);});
-  const o2=document.createElement("option");o2.value="__new__";o2.textContent="➕ Mi lugar no aparece";asel.appendChild(o2);
+  const o2=document.createElement("option");o2.value="__new__";o2.textContent="Agregar lugar";asel.appendChild(o2);
   asel.value=val;
   document.getElementById("buyerAldeaNewBox").style.display="none";
   input.value="";
@@ -2062,7 +2062,7 @@ function loadMunicipios(){
   munSel.innerHTML="<option value=''>Selecciona municipio</option>";
   if(dept&&dept!=="__new__"&&GT_DATA[dept]){
     GT_DATA[dept].slice().sort((a,b)=>a.localeCompare(b,'es')).forEach(m=>{const o=document.createElement("option");o.value=m;o.textContent=m;munSel.appendChild(o);});
-    const o=document.createElement("option");o.value="__new__";o.textContent="➕ Mi municipio no aparece";munSel.appendChild(o);
+    const o=document.createElement("option");o.value="__new__";o.textContent="Agregar municipio";munSel.appendChild(o);
   }
   const munBox=document.getElementById("buyerMunNewBox"); if(munBox) munBox.style.display="none";
   const asel=document.getElementById("buyerAldea");if(asel){asel.innerHTML="<option value=''>Todo el municipio / Cabecera</option>";}
@@ -2079,7 +2079,7 @@ function onBuyerMunChange(){
   if(mun&&mun!=="__new__"){
     const aldeas=((GT_ALDEAS[dept]&&GT_ALDEAS[dept][mun])||[]).slice().sort((a,b)=>a.localeCompare(b,'es'));
     aldeas.forEach(a=>{const o=document.createElement("option");o.value=a;o.textContent=a;asel.appendChild(o);});
-    const o=document.createElement("option");o.value="__new__";o.textContent="➕ Mi lugar no aparece";asel.appendChild(o);
+    const o=document.createElement("option");o.value="__new__";o.textContent="Agregar lugar";asel.appendChild(o);
   }
   const aldeaBox=document.getElementById("buyerAldeaNewBox"); if(aldeaBox) aldeaBox.style.display="none";
   renderCheckoutPaymentMethods();
