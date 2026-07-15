@@ -960,6 +960,7 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
         <button id="shopBtnMayoristas" class="shop-price-btn" onclick="setVistaShop('mayoristas')">🏪 Mayoristas</button>
       </div>
       <div id="shopSubBtns" style="display:none;flex-wrap:wrap;gap:0.4rem;padding-left:3.2rem">
+        <button id="shopSubExtra"    class="shop-price-btn" onclick="setMayoreoTipo('extra')">📦 MAYOR</button>
         <button id="shopSubMediaDoc" class="shop-price-btn" onclick="setMayoreoTipo('media_docena')">💵 ½ DOC</button>
         <button id="shopSubDocena"   class="shop-price-btn" onclick="setMayoreoTipo('docena')">💵 DOC</button>
         <button id="shopSubFardo"    class="shop-price-btn" onclick="setMayoreoTipo('fardo')">🎁 FARDO</button>
@@ -1360,7 +1361,11 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
           <option value="resta">Resta fija sobre precio público</option>
         </select>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.6rem">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:0.6rem">
+        <div>
+          <label style="font-size:0.8rem;font-weight:700;color:#92400e;display:block;margin-bottom:0.3rem">📦 MAYOR Q</label>
+          <input type="number" id="fExtra" placeholder="0" min="0" step="0.01" oninput="previewPrecios()" style="width:100%;padding:0.7rem;border:1px solid rgba(245,158,11,0.4);border-radius:6px;font-size:0.95rem;background:#fff;font-weight:600">
+        </div>
         <div>
           <label style="font-size:0.8rem;font-weight:700;color:#92400e;display:block;margin-bottom:0.3rem">💵 ½ DOC Q</label>
           <input type="number" id="fMediaDocena" placeholder="0" min="0" step="0.01" oninput="previewPrecios()" style="width:100%;padding:0.7rem;border:1px solid rgba(245,158,11,0.4);border-radius:6px;font-size:0.95rem;background:#fff;font-weight:600">
@@ -1374,11 +1379,17 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
           <input type="number" id="fFardo" placeholder="0" min="0" step="0.01" oninput="previewPrecios()" style="width:100%;padding:0.7rem;border:1px solid rgba(245,158,11,0.4);border-radius:6px;font-size:0.95rem;background:#fff;font-weight:600">
         </div>
       </div>
-      <div class="form-group" style="margin-top:0.8rem;margin-bottom:0">
-        <label style="font-size:0.8rem;font-weight:700;color:#92400e;display:block;margin-bottom:0.3rem">📦 Unidades que trae el FARDO</label>
-        <input type="number" id="fUnidFardo" placeholder="Ej: 24" min="0" step="1" style="width:100%;padding:0.7rem;border:1px solid rgba(245,158,11,0.4);border-radius:6px;font-size:0.95rem;background:#fff;font-weight:600">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin-top:0.8rem">
+        <div class="form-group" style="margin-bottom:0">
+          <label style="font-size:0.8rem;font-weight:700;color:#92400e;display:block;margin-bottom:0.3rem">📦 Unidades del precio MAYOR <span style="font-weight:500">(Ej: 2, 3, 4 UDS)</span></label>
+          <input type="number" id="fUnidExtra" placeholder="Ej: 3" min="0" step="1" style="width:100%;padding:0.7rem;border:1px solid rgba(245,158,11,0.4);border-radius:6px;font-size:0.95rem;background:#fff;font-weight:600">
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label style="font-size:0.8rem;font-weight:700;color:#92400e;display:block;margin-bottom:0.3rem">📦 Unidades que trae el FARDO</label>
+          <input type="number" id="fUnidFardo" placeholder="Ej: 24" min="0" step="1" style="width:100%;padding:0.7rem;border:1px solid rgba(245,158,11,0.4);border-radius:6px;font-size:0.95rem;background:#fff;font-weight:600">
+        </div>
       </div>
-      <div style="font-size:0.78rem;color:#92400e;margin-top:0.7rem;font-style:italic">Deja en 0 si no aplica ese tipo de precio para este producto.</div>
+      <div style="font-size:0.78rem;color:#92400e;margin-top:0.7rem;font-style:italic">Deja en 0 si no aplica ese tipo de precio para este producto. Usa MAYOR para un precio por paquete con una cantidad de unidades distinta según el inventario de cada producto (ej: 2UDS, 3UDS, 4UDS).</div>
       <div id="precioPreview" style="margin-top:0.8rem;font-size:0.85rem;color:#92400e;font-weight:600"></div>
     </div>
     <!-- MULTI-IMAGE SECTION -->
@@ -1517,6 +1528,7 @@ const PRECIO_TIPOS={
   mayoristas:{label:"Mayoristas",icon:"🏪"}
 };
 const MAYOREO_SUB_TIPOS={
+  extra:{label:"MAYOR",icon:"📦"},
   media_docena:{label:"½ DOC",icon:"💵"},
   docena:{label:"DOC",icon:"💵"},
   fardo:{label:"FARDO",icon:"🎁"}
@@ -1532,6 +1544,7 @@ function getPrecioProducto(p){
   if(mayoreoTipo==="media_docena"&&parseFloat(p.precio_media_docena)>0) return parseFloat(p.precio_media_docena);
   if(mayoreoTipo==="docena"&&parseFloat(p.precio_docena)>0) return parseFloat(p.precio_docena);
   if(mayoreoTipo==="fardo"&&parseFloat(p.precio_fardo)>0) return parseFloat(p.precio_fardo);
+  if(mayoreoTipo==="extra"&&parseFloat(p.precio_extra)>0) return parseFloat(p.precio_extra);
   // Fallback: usar precio_mayoristas general si existe
   const precioEspecial=parseFloat(p.precio_mayoristas)||parseFloat(p.precio_uds)||0;
   if(precioEspecial>0) return precioEspecial;
@@ -1544,6 +1557,7 @@ function tieneEspecialActivo(p){
   if(mayoreoTipo==="media_docena"&&parseFloat(p.precio_media_docena)>0) return true;
   if(mayoreoTipo==="docena"&&parseFloat(p.precio_docena)>0) return true;
   if(mayoreoTipo==="fardo"&&parseFloat(p.precio_fardo)>0) return true;
+  if(mayoreoTipo==="extra"&&parseFloat(p.precio_extra)>0) return true;
   if((parseFloat(p.precio_mayoristas)||0)>0) return true;
   return false;
 }
@@ -1848,6 +1862,7 @@ function renderShop(){
             (tieneOferta?"<div style='font-size:0.8rem;color:var(--text-muted);text-decoration:line-through'>Q"+p.price.toFixed(2)+"</div>":"")+
             "<div class='product-price' style='"+(tieneOferta?"color:var(--red)":"")+"'>Q"+precio.toFixed(2)+"</div>"+
             (mayoreoTipo==="fardo"&&parseFloat(p.precio_fardo)>0&&(parseInt(p.unidades_fardo,10)||0)>0?"<div style='font-size:0.72rem;color:var(--orange);font-weight:700'>🎁 FARDO "+parseInt(p.unidades_fardo,10)+"UDS</div>":"")+
+            (mayoreoTipo==="extra"&&parseFloat(p.precio_extra)>0&&(parseInt(p.unidades_extra,10)||0)>0?"<div style='font-size:0.72rem;color:var(--orange);font-weight:700'>📦 "+parseInt(p.unidades_extra,10)+"UDS</div>":"")+
             "<div class='product-stock-label'>"+(avail?"Stock: "+p.stock:"Agotado")+"</div>"+
           "</div>"+
           "<div class='product-card-actions'>"+
@@ -1919,8 +1934,8 @@ function setMayoreoTipo(tipo){
   if(btnMay) btnMay.className="shop-price-btn"+(!esPublico?" active":"");
   const sub=document.getElementById("shopSubBtns");
   if(sub) sub.style.display=esPublico?"none":"flex";
-  const idMap={media_docena:"shopSubMediaDoc",docena:"shopSubDocena",fardo:"shopSubFardo"};
-  ["media_docena","docena","fardo"].forEach(k=>{
+  const idMap={media_docena:"shopSubMediaDoc",docena:"shopSubDocena",fardo:"shopSubFardo",extra:"shopSubExtra"};
+  ["media_docena","docena","fardo","extra"].forEach(k=>{
     const b=document.getElementById(idMap[k]);
     if(b) b.className="shop-price-btn"+(mayoreoTipo===k?" active":"");
   });
@@ -1939,6 +1954,8 @@ function renderCart(){
     const tieneEspecial=tieneEspecialActivo(p);
     const enFardo=mayoreoTipo==="fardo"&&parseFloat(p.precio_fardo)>0;
     const uf=parseInt(p.unidades_fardo,10)||0;
+    const enExtra=mayoreoTipo==="extra"&&parseFloat(p.precio_extra)>0;
+    const ue=parseInt(p.unidades_extra,10)||0;
     return "<div class='cart-item'>"+
       (img?"<img class='cart-item-img' src='"+img+"' onerror=\"this.style.display='none'\">":"<div class='cart-item-img' style='display:flex;align-items:center;justify-content:center;font-size:2rem'>🖼</div>")+
       "<div class='cart-item-info'>"+
@@ -1946,6 +1963,7 @@ function renderCart(){
         (tieneEspecial?"<div style='font-size:0.8rem;color:var(--text-muted);text-decoration:line-through'>Q"+p.price.toFixed(2)+"</div>":"")+
         "<div class='cart-item-price'>Q"+pu.toFixed(2)+" c/u</div>"+
         (enFardo&&uf>0?"<div style='font-size:0.78rem;color:var(--orange);font-weight:700;margin-top:0.15rem'>🎁 FARDO "+uf+"UDS</div>":"")+
+        (enExtra&&ue>0?"<div style='font-size:0.78rem;color:var(--orange);font-weight:700;margin-top:0.15rem'>📦 "+ue+"UDS</div>":"")+
         "<div class='qty-controls'>"+
           "<button class='qty-btn' onclick='changeQty("+p.id+",-1)'>−</button>"+
           "<input type='number' class='qty-num-input' min='1' max='"+(p.stock||9999)+"' value='"+ci.qty+"' onchange='setQty("+p.id+",this.value)' onclick='this.select()'>"+
@@ -1972,7 +1990,7 @@ function renderCart(){
     "<div style='background:var(--orange-soft);border:1px solid rgba(245,158,11,0.3);border-radius:var(--radius-md);padding:1.2rem;margin-top:1.5rem'>"+
       "<div style='font-size:0.85rem;font-weight:800;color:#92400e;margin-bottom:1rem;text-transform:uppercase;letter-spacing:0.5px;'>Tipo de Cliente</div>"+
       "<div id='mayoreoTipoButtons' style='display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:0.6rem'></div>"+
-      "<div id='mayoreoSubButtons' style='display:none;grid-template-columns:1fr 1fr 1fr;gap:0.5rem;margin-top:0.4rem'></div>"+
+      "<div id='mayoreoSubButtons' style='display:none;grid-template-columns:1fr 1fr;gap:0.5rem;margin-top:0.4rem'></div>"+
     "</div>"+
     "<button class='checkout-btn' onclick='openCheckout()'>Proceder al Pago</button>"+
     "<button class='quote-btn' onclick='openQuote()'>Generar Cotización PDF</button>"+
@@ -2300,7 +2318,7 @@ function saveInventoryUpdate(){
 }
 function openAddModal(){
   editingId=null; document.getElementById("modalTitle").textContent="Agregar Producto";
-  ["fSku","fName","fCategoria","fDesc","fPrice","fOferta","fStock","fImgUrl","fImgData","fMediaDocena","fDocena","fFardo","fUnidFardo"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
+  ["fSku","fName","fCategoria","fDesc","fPrice","fOferta","fStock","fImgUrl","fImgData","fMediaDocena","fDocena","fFardo","fUnidFardo","fExtra","fUnidExtra"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
   const opEl=document.getElementById("fMayoreoOperacion"); if(opEl) opEl.value="directo";
   document.getElementById("imgPreview").style.display="none";
   document.getElementById("precioPreview").textContent="";
@@ -2322,6 +2340,8 @@ function openEditModal(id){
   const dc=document.getElementById("fDocena"); if(dc) dc.value=(p.precio_docena||0)>0?p.precio_docena:"";
   const fa=document.getElementById("fFardo"); if(fa) fa.value=(p.precio_fardo||0)>0?p.precio_fardo:"";
   const uf=document.getElementById("fUnidFardo"); if(uf) uf.value=(p.unidades_fardo||0)>0?p.unidades_fardo:"";
+  const ex=document.getElementById("fExtra"); if(ex) ex.value=(p.precio_extra||0)>0?p.precio_extra:"";
+  const ue=document.getElementById("fUnidExtra"); if(ue) ue.value=(p.unidades_extra||0)>0?p.unidades_extra:"";
   // Cargar imágenes múltiples
   if(p.images && p.images.length){
     _multiImgs = p.images.map(src=>({type: src.startsWith("data:")?"base64":"url", src}));
@@ -2365,10 +2385,12 @@ function previewPrecios(){
   const md=calcVal(document.getElementById("fMediaDocena")?.value);
   const dc=calcVal(document.getElementById("fDocena")?.value);
   const fa=calcVal(document.getElementById("fFardo")?.value);
+  const ex=calcVal(document.getElementById("fExtra")?.value);
   let prev="";
   if(md>0) prev+="½ DOC: Q"+md.toFixed(2)+"  ";
   if(dc>0) prev+="DOC: Q"+dc.toFixed(2)+"  ";
-  if(fa>0) prev+="FARDO: Q"+fa.toFixed(2);
+  if(fa>0) prev+="FARDO: Q"+fa.toFixed(2)+"  ";
+  if(ex>0) prev+="MAYOR: Q"+ex.toFixed(2);
   document.getElementById("precioPreview").textContent=prev;
 }
 function saveProduct(){
@@ -2387,10 +2409,12 @@ function saveProduct(){
   const precio_media_docena=calcMayoreo(document.getElementById("fMediaDocena")?.value);
   const precio_docena=calcMayoreo(document.getElementById("fDocena")?.value);
   const precio_fardo=calcMayoreo(document.getElementById("fFardo")?.value);
+  const precio_extra=calcMayoreo(document.getElementById("fExtra")?.value);
   const precio_oferta=parseFloat(document.getElementById("fOferta")?.value)||0;
-  const precio_mayoristas=precio_docena||precio_media_docena||precio_fardo||0;
+  const precio_mayoristas=precio_docena||precio_media_docena||precio_fardo||precio_extra||0;
   const unidades_fardo=parseInt(document.getElementById("fUnidFardo")?.value,10)||0;
-  const extras={precio_mayoristas,precio_media_docena,precio_docena,precio_fardo,precio_oferta,unidades_fardo};
+  const unidades_extra=parseInt(document.getElementById("fUnidExtra")?.value,10)||0;
+  const extras={precio_mayoristas,precio_media_docena,precio_docena,precio_fardo,precio_extra,precio_oferta,unidades_fardo,unidades_extra};
 
   // Collect final valid images (filter empty URLs)
   const validImgs = _multiImgs.filter(m=>m.src&&m.src.trim());
@@ -2733,7 +2757,7 @@ function exportInventoryCSV(){
   var q=(document.getElementById("adminSearch")?.value||"").toLowerCase().trim();
   var lista=q?products.filter(function(p){return p.name.toLowerCase().includes(q)||(p.sku||"").toLowerCase().includes(q);}):products;
   if(!lista.length){toast("No hay productos que coincidan con la búsqueda","error");return;}
-  var headers=["sku","nombre","precio","precio_oferta","precio_media_docena","precio_docena","precio_fardo","unidades_fardo","stock","descripcion","imgUrl","Categoría"];
+  var headers=["sku","nombre","precio","precio_oferta","precio_media_docena","precio_docena","precio_fardo","unidades_fardo","precio_extra","unidades_extra","stock","descripcion","imgUrl","Categoría"];
   var rows=lista.map(function(p){
     return [
       fCSV(p.sku||""),
@@ -2744,6 +2768,8 @@ function exportInventoryCSV(){
       (p.precio_docena||0)>0?p.precio_docena:0,
       (p.precio_fardo||0)>0?p.precio_fardo:0,
       (p.unidades_fardo||0)>0?p.unidades_fardo:0,
+      (p.precio_extra||0)>0?p.precio_extra:0,
+      (p.unidades_extra||0)>0?p.unidades_extra:0,
       p.stock||0,
       fCSV(p.desc||""),
       fCSV(p.imgUrl||""),
@@ -2789,6 +2815,8 @@ function importInventoryCSV(e){
         precio_docena:gi(["precio_docena","docena","doc"]),
         precio_fardo:gi(["precio_fardo","fardo"]),
         unidades_fardo:gi(["unidades_fardo","unidades_por_fardo","uds_fardo"]),
+        precio_extra:gi(["precio_extra","extra"]),
+        unidades_extra:gi(["unidades_extra","unidades_extras","uds_extra"]),
         stock:header.indexOf("stock"),
         desc:gi(["descripcion","desc"]),
         imgUrl:gi(["imgurl","img_url","imagen"]),
@@ -2811,12 +2839,14 @@ function importInventoryCSV(e){
         var precio_docena=idx.precio_docena>=0?parseFloat(cols[idx.precio_docena])||0:0;
         var precio_fardo=idx.precio_fardo>=0?parseFloat(cols[idx.precio_fardo])||0:0;
         var unidades_fardo=idx.unidades_fardo>=0?parseInt(cols[idx.unidades_fardo])||0:0;
-        var precio_mayoristas=precio_docena||precio_media_docena||precio_fardo||0;
+        var precio_extra=idx.precio_extra>=0?parseFloat(cols[idx.precio_extra])||0:0;
+        var unidades_extra=idx.unidades_extra>=0?parseInt(cols[idx.unidades_extra])||0:0;
+        var precio_mayoristas=precio_docena||precio_media_docena||precio_fardo||precio_extra||0;
         var ex=sku
           ? products.find(function(p){return p.sku&&p.sku.trim()===sku.trim();})||products.find(function(p){return p.name.toLowerCase().trim()===name.toLowerCase().trim();})
           : products.find(function(p){return p.name.toLowerCase().trim()===name.toLowerCase().trim();});
-        if(ex){Object.assign(ex,{sku:sku,name:name,price:price,stock:stock,desc:desc,imgUrl:imgUrl||ex.imgUrl||"",categoria:categoria,precio_oferta:precio_oferta,precio_media_docena:precio_media_docena,precio_docena:precio_docena,precio_fardo:precio_fardo,unidades_fardo:unidades_fardo,precio_mayoristas:precio_mayoristas});updated++;}
-        else{products.push({id:nextId(),sku:sku,name:name,price:price,stock:stock,desc:desc,img:"",imgUrl:imgUrl,categoria:categoria,precio_oferta:precio_oferta,precio_media_docena:precio_media_docena,precio_docena:precio_docena,precio_fardo:precio_fardo,unidades_fardo:unidades_fardo,precio_mayoristas:precio_mayoristas});added++;}
+        if(ex){Object.assign(ex,{sku:sku,name:name,price:price,stock:stock,desc:desc,imgUrl:imgUrl||ex.imgUrl||"",categoria:categoria,precio_oferta:precio_oferta,precio_media_docena:precio_media_docena,precio_docena:precio_docena,precio_fardo:precio_fardo,unidades_fardo:unidades_fardo,precio_extra:precio_extra,unidades_extra:unidades_extra,precio_mayoristas:precio_mayoristas});updated++;}
+        else{products.push({id:nextId(),sku:sku,name:name,price:price,stock:stock,desc:desc,img:"",imgUrl:imgUrl,categoria:categoria,precio_oferta:precio_oferta,precio_media_docena:precio_media_docena,precio_docena:precio_docena,precio_fardo:precio_fardo,unidades_fardo:unidades_fardo,precio_extra:precio_extra,unidades_extra:unidades_extra,precio_mayoristas:precio_mayoristas});added++;}
       }
       sortProductsAZ(); saveProducts();renderAdminProducts();populateInventorySelect();renderShop();
       toast("Importado: "+added+" nuevos, "+updated+" actualizados","success");
@@ -3169,6 +3199,15 @@ function openProductDetail(id) {
     fardoInfoEl.style.display = "block";
   } else {
     fardoInfoEl.style.display = "none";
+  }
+
+  const extraInfoEl = document.getElementById("pdExtraInfo2");
+  const ue = parseInt(p.unidades_extra,10)||0;
+  if (mayoreoTipo==="extra" && parseFloat(p.precio_extra)>0 && ue>0) {
+    extraInfoEl.textContent = "📦 "+ue+"UDS";
+    extraInfoEl.style.display = "block";
+  } else {
+    extraInfoEl.style.display = "none";
   }
 
   const stockEl = document.getElementById("pdStock2");
@@ -3624,6 +3663,7 @@ function downloadAldeaTemplate(){
     <div class="pd-price2-old" id="pdPriceOld2" style="display:none"></div>
     <div class="pd-price2" id="pdPrice2"></div>
     <div id="pdFardoInfo2" style="display:none;font-size:0.85rem;color:var(--orange);font-weight:700;margin-top:0.2rem"></div>
+    <div id="pdExtraInfo2" style="display:none;font-size:0.85rem;color:var(--orange);font-weight:700;margin-top:0.2rem"></div>
     <div class="pd-avail" id="pdStock2"></div>
     <div class="pd-desc2" id="pdDesc2"></div>
   </div>
