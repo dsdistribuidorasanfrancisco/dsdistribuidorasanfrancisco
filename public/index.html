@@ -1920,7 +1920,7 @@ function setVistaShop(vista){
   } else {
     const sub=document.getElementById("shopSubBtns");
     if(sub) sub.style.display="flex";
-    setMayoreoTipo("media_docena");
+    setMayoreoTipo("mayor");
   }
 }
 function setMayoreoTipo(tipo){
@@ -2005,7 +2005,7 @@ function renderCart(){
       const b=document.createElement("button");
       b.className="mayoreo-tipo-btn"+(isActive?" active":"");
       b.onclick=()=>{
-        if(k==="mayoristas") setMayoreoTipo("media_docena");
+        if(k==="mayoristas") setMayoreoTipo("mayor");
         else setMayoreoTipo(k);
       };
       b.innerHTML=v.icon+" "+v.label;
