@@ -394,7 +394,8 @@ setInterval(() => {
   --border: #e2e8f0;
   --text-muted: #64748b;
   --green: #10b981;
-  --green-soft: #d1fae5;
+  --green-soft: color-mix(in srgb, var(--accent) 18%, white);
+  --green-soft-text: color-mix(in srgb, var(--accent) 65%, black);
   --red: #ef4444;
   --red-soft: #fee2e2;
   --orange: #f59e0b;
@@ -406,7 +407,7 @@ setInterval(() => {
   --shadow-sm: 0 4px 6px -1px rgba(0,0,0,0.05);
   --shadow-md: 0 10px 15px -3px rgba(0,0,0,0.05);
   --shadow-lg: 0 20px 25px -5px rgba(0,0,0,0.05);
-  --shadow-glow: 0 8px 20px rgba(4, 158, 13, 0.3);
+  --shadow-glow: 0 8px 20px color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -638,7 +639,7 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
 .qty-num { min-width: 32px; text-align: center; font-weight: 700; font-size: 1rem; }
 .qty-num-input { width: 52px; text-align: center; font-weight: 700; font-size: 1rem; border: 1px solid var(--border); border-radius: 8px; padding: 0.4rem 0.2rem; font-family: inherit; color: var(--dark); background: var(--bg); -moz-appearance: textfield; }
 .qty-num-input::-webkit-outer-spin-button, .qty-num-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-.qty-num-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(4, 158, 13, 0.12); }
+.qty-num-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent); }
 .remove-btn { background: none; border: none; color: var(--red); cursor: pointer; font-size: 0.85rem; font-weight: 600; text-decoration: none; padding: 0.5rem; margin-left: 0.5rem; transition: color 0.2s; }
 .remove-btn:hover { color: #b91c1c; text-decoration: underline; }
 .cart-total-price { margin-left: auto; text-align: right; font-weight: 800; font-size: 1.2rem; color: var(--dark); font-family: "Plus Jakarta Sans"; }
@@ -652,7 +653,7 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
 .shop-price-btn:hover { border-color: var(--accent); color: var(--accent); }
 .shop-price-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 2px 8px rgba(99,102,241,0.3); }
 .checkout-btn { width: 100%; padding: 1.2rem; background: var(--gradient-secondary); color: #fff; border: none; border-radius: var(--radius-sm); font-size: 1.1rem; font-weight: 700; cursor: pointer; margin-top: 1.2rem; transition: all 0.2s; box-shadow: var(--shadow-glow); }
-.checkout-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(4, 158, 13, 0.4); }
+.checkout-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px color-mix(in srgb, var(--accent) 40%, transparent); }
 .quote-btn { width: 100%; padding: 1rem; background: var(--surface); color: var(--dark); border: 2px solid var(--border); border-radius: var(--radius-sm); font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 0.8rem; transition: all 0.2s; }
 .quote-btn:hover { border-color: var(--dark); background: var(--bg); }
 .clear-cart-btn { width: 100%; padding: 0.85rem; background: transparent; color: var(--red); border: 2px solid var(--red-soft); border-radius: var(--radius-sm); font-size: 0.95rem; font-weight: 700; cursor: pointer; margin-top: 0.6rem; transition: all 0.2s; }
@@ -700,7 +701,7 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
 .status-badge.pendiente, .status-badge.Pendiente { background: var(--orange-soft); color: #92400e; }
 .status-badge.enproceso, .status-badge.EnProceso { background: #e0e7ff; color: #3730a3; }
 .status-badge.enruta, .status-badge.EnRuta { background: #f3e8ff; color: #6b21a8; }
-.status-badge.entregado, .status-badge.Entregado { background: var(--green-soft); color: #065f46; }
+.status-badge.entregado, .status-badge.Entregado { background: var(--green-soft); color: var(--green-soft-text); }
 .status-badge.cancelado, .status-badge.Cancelado { background: var(--red-soft); color: #991b1b; }
 
 /* Forms & Settings */
@@ -732,7 +733,7 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
 .btn-primary { background: var(--dark); color: #fff; } .btn-primary:hover { background: var(--dark-soft); transform: translateY(-1px); }
 .btn-danger { background: var(--red); color: #fff; } .btn-danger:hover { background: #dc2626; }
 .btn-ghost { background: var(--surface); color: var(--dark); border: 1px solid var(--border); box-shadow: none; } .btn-ghost:hover { border-color: var(--dark); background: var(--bg); }
-.btn-save { background: var(--gradient-secondary); color: #fff; border: none; border-radius: var(--radius-sm); padding: 0.85rem 1.5rem; font-family: inherit; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow-glow); } .btn-save:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(4, 158, 13, 0.4); }
+.btn-save { background: var(--gradient-secondary); color: #fff; border: none; border-radius: var(--radius-sm); padding: 0.85rem 1.5rem; font-family: inherit; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: var(--shadow-glow); } .btn-save:hover { transform: translateY(-2px); box-shadow: 0 10px 20px color-mix(in srgb, var(--accent) 40%, transparent); }
 .btn-cancel { background: var(--bg); color: var(--text-muted); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0.85rem 1.5rem; font-family: inherit; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.2s; } .btn-cancel:hover { color: var(--dark); border-color: var(--dark); }
 .btn-edit { padding: 0.5rem 1rem; font-size: 0.85rem; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-family: inherit; font-weight: 600; color: var(--dark); transition: 0.2s; } .btn-edit:hover { background: var(--dark); color: #fff; border-color: var(--dark); }
 .btn-del { padding: 0.5rem 1rem; font-size: 0.85rem; background: var(--red-soft); border: 1px solid #fecaca; border-radius: 6px; cursor: pointer; font-family: inherit; font-weight: 600; color: var(--red); transition: 0.2s; } .btn-del:hover { background: var(--red); color: #fff; border-color: var(--red); }
@@ -1309,7 +1310,7 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
     </div>
     <div class="settings-card">
       <h4>🏪 Sistema de Precios por Producto</h4>
-      <div style="background:var(--green-soft);border:1px solid rgba(16,185,129,0.3);border-radius:var(--radius-sm);padding:1.2rem;color:#065f46;font-size:0.9rem;line-height:1.6">
+      <div style="background:var(--green-soft);border:1px solid rgba(16,185,129,0.3);border-radius:var(--radius-sm);padding:1.2rem;color:var(--green-soft-text);font-size:0.9rem;line-height:1.6">
         <strong>Cómo agregar precio Mayoristas:</strong><br>
         1. Ve a la pestaña <strong>Inventario</strong> → Editar cualquier producto<br>
         2. En la sección "Precio Mayoristas" puedes ingresar:<br>
@@ -1564,7 +1565,7 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
     <div class="payment-methods" id="checkoutPaymentMethods"></div>
     <div id="paymentInfoDisplay" class="payment-info-box"></div>
     <div id="shippingCostDisplay" style="font-size:0.95rem;font-weight:600;color:var(--text-muted);margin-bottom:0.8rem"></div>
-    <div id="freeShippingBadge" style="display:none;background:var(--green-soft);color:#065f46;border-radius:var(--radius-sm);padding:0.8rem;font-size:0.95rem;font-weight:700;margin-bottom:1rem;text-align:center">¡Envío gratis en este pedido!</div>
+    <div id="freeShippingBadge" style="display:none;background:var(--green-soft);color:var(--green-soft-text);border-radius:var(--radius-sm);padding:0.8rem;font-size:0.95rem;font-weight:700;margin-bottom:1rem;text-align:center">¡Envío gratis en este pedido!</div>
     <div style="border-top:1px solid var(--border);margin:1.5rem 0 1rem;"></div>
     <div style="display:flex;justify-content:space-between;align-items:center; flex-wrap:wrap;"><strong>Total a pagar:</strong><span id="checkoutTotal" style="color:var(--dark);font-size:1.8rem;font-weight:800;font-family:'Plus Jakarta Sans'"></span></div>
     <div class="modal-footer"><button class="btn-cancel" onclick="document.getElementById('checkoutModal').classList.remove('open')">Cancelar</button><button class="btn-save" onclick="placeOrder()">Confirmar Pedido</button></div>
@@ -3018,7 +3019,7 @@ function updateFbStatusBadge(){
   if(window._fb&&window._fb.ready()){
     badge.textContent="Conectado";
     badge.style.background="var(--green-soft)";
-    badge.style.color="#065f46";
+    badge.style.color="var(--green-soft-text)";
     var saved=cfg?JSON.parse(cfg):{};
     if(saved.databaseURL){document.getElementById("fbDbUrl").value=saved.databaseURL;}
     if(saved.projectId){document.getElementById("fbProjectId").value=saved.projectId;}
@@ -3093,7 +3094,7 @@ function renderShippingZones(){
   const zones=storeSettings.shippingZones||{}, entries=Object.entries(zones);
   if(!entries.length){cont.innerHTML="<p style='font-size:0.95rem;color:var(--text-muted)'>Sin zonas especiales configuradas.</p>";return;}
   cont.innerHTML="<table class='admin-table'><thead><tr><th>Departamento</th><th>Municipio</th><th>Lugar</th><th>Costo</th><th>Acción</th></tr></thead><tbody>"+
-    entries.map(([k,v])=>{const parts=k.split("|");const d=parts[0],m=parts[1],a=parts[2]||"";return"<tr><td>"+d+"</td><td>"+m+"</td><td>"+(a?"<span style='background:var(--green-soft);color:#065f46;border-radius:100px;padding:0.2rem 0.6rem;font-size:0.8rem;font-weight:700'>"+a+"</span>":"<span style='color:var(--text-muted);font-size:0.85rem'>—</span>")+"</td><td><strong>Q"+v+"</strong></td><td><button class='btn-del' onclick='removeShippingZone(\""+k+"\")'>Quitar</button></td></tr>";}).join("")+
+    entries.map(([k,v])=>{const parts=k.split("|");const d=parts[0],m=parts[1],a=parts[2]||"";return"<tr><td>"+d+"</td><td>"+m+"</td><td>"+(a?"<span style='background:var(--green-soft);color:var(--green-soft-text);border-radius:100px;padding:0.2rem 0.6rem;font-size:0.8rem;font-weight:700'>"+a+"</span>":"<span style='color:var(--text-muted);font-size:0.85rem'>—</span>")+"</td><td><strong>Q"+v+"</strong></td><td><button class='btn-del' onclick='removeShippingZone(\""+k+"\")'>Quitar</button></td></tr>";}).join("")+
   "</tbody></table>";
 }
 
@@ -3347,7 +3348,7 @@ function renderCheckoutPaymentMethods(){
           stores.map(s=>"<option value='"+s.id+"'>"+s.nombre+" — "+s.direccion+"</option>").join("")+
           "</select></div>";
       } else if(stores.length===1){
-        extra="<div style='margin-top:0.6rem;background:var(--green-soft);color:#065f46;border-radius:var(--radius-sm);padding:0.7rem 0.9rem;font-size:0.88rem;font-weight:600'>📍 "+stores[0].nombre+"<br><span style='font-weight:400'>"+stores[0].direccion+"</span></div>"+
+        extra="<div style='margin-top:0.6rem;background:var(--green-soft);color:var(--green-soft-text);border-radius:var(--radius-sm);padding:0.7rem 0.9rem;font-size:0.88rem;font-weight:600'>📍 "+stores[0].nombre+"<br><span style='font-weight:400'>"+stores[0].direccion+"</span></div>"+
           "<input type='hidden' id='pickupStoreSelect' value='"+stores[0].id+"'>";
       }
     }
@@ -3396,7 +3397,7 @@ function renderPickupStoresAdmin(){
       const parts=k.split("|");const d=parts[0],m=parts[1],a=parts[2]||"";
       if(!d||!m)return"";
       const label=a?"📍 "+a+", "+m+", "+d:"🏙️ "+m+", "+d;
-      const bg=a?"background:var(--green-soft);color:#065f46":"background:var(--bg);color:var(--dark)";
+      const bg=a?"background:var(--green-soft);color:var(--green-soft-text)":"background:var(--bg);color:var(--dark)";
       return "<span style='display:inline-block;"+bg+";border:1px solid var(--border);border-radius:100px;padding:0.2rem 0.7rem;font-size:0.78rem;font-weight:600;margin:0.2rem'>"+label+"</span>";
     }).join("");
     return "<div style='background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-md);padding:1.2rem;margin-bottom:1rem'>"+
@@ -3516,7 +3517,7 @@ function openProductDetail(id) {
       allImgs.forEach((_,i)=>{
         const d = document.createElement("span");
         d.dataset.idx = i;
-        d.style.cssText = "width:8px;height:8px;border-radius:50%;background:"+(i===0?"#049E0D":"rgba(0,0,0,0.22)")+";transition:background 0.2s,transform 0.2s;display:inline-block;"+(i===0?"transform:scale(1.25);":"");
+        d.style.cssText = "width:8px;height:8px;border-radius:50%;background:"+(i===0?"var(--accent)":"rgba(0,0,0,0.22)")+";transition:background 0.2s,transform 0.2s;display:inline-block;"+(i===0?"transform:scale(1.25);":"");
         dots.appendChild(d);
       });
       imgWrap.appendChild(dots);
@@ -3629,7 +3630,7 @@ function _pdSetImg(idx){
   if(track) track.style.transform = "translateX(-" + idx + "00%)";
   const dots = document.querySelectorAll("#pdCarouselDots span");
   dots.forEach((d,i)=>{
-    d.style.background = i===idx ? "#049E0D" : "rgba(0,0,0,0.22)";
+    d.style.background = i===idx ? "var(--accent)" : "rgba(0,0,0,0.22)";
     d.style.transform = i===idx ? "scale(1.25)" : "scale(1)";
   });
 }
