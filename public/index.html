@@ -422,15 +422,13 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
 .nav-links { display: flex; gap: 0.4rem; align-items: center; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; padding-bottom: 2px; }
 .nav-links::-webkit-scrollbar { display: none; }
 .nav-btn { background: #f8fafc; border: 1px solid transparent; color: var(--dark-soft); font-family: "Inter", sans-serif; font-size: 0.9rem; font-weight: 600; width: 46px; height: 46px; padding: 0; border-radius: 14px; cursor: pointer; white-space: nowrap; position: relative; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
-.nav-emoji { font-size: 1.35rem; line-height: 1; display: block; transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.3s ease; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.15)); }
+.nav-emoji { font-size: 1.35rem; line-height: 1; display: block; }
 .nav-btn::after { content: attr(title); position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%) translateY(-4px); background: var(--dark); color: #fff; font-size: 0.7rem; font-weight: 700; padding: 0.35rem 0.7rem; border-radius: 8px; white-space: nowrap; opacity: 0; pointer-events: none; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 10; }
 .nav-btn:hover::after { opacity: 1; transform: translateX(-50%) translateY(0); }
-.nav-btn:hover { background: var(--green-soft); transform: translateY(-3px); box-shadow: 0 6px 14px rgba(4, 158, 13, 0.18); }
-.nav-btn:hover .nav-emoji { transform: scale(1.2) rotate(-6deg); }
-.nav-btn:active { transform: translateY(-1px) scale(0.95); }
-.nav-btn:active .nav-emoji { transform: scale(0.9); }
-.nav-btn.active { background: var(--gradient-primary); border-color: transparent; box-shadow: 0 6px 16px rgba(4, 158, 13, 0.35), 0 0 0 3px rgba(50, 255, 0, 0.12); }
-.nav-btn.active:hover { transform: translateY(-3px) scale(1.04); }
+.nav-btn:hover { background: color-mix(in srgb, var(--accent) 18%, var(--surface)); }
+.nav-btn:active { }
+.nav-btn.active { background: var(--gradient-primary); border-color: transparent; box-shadow: 0 6px 16px color-mix(in srgb, var(--accent) 35%, transparent), 0 0 0 3px color-mix(in srgb, var(--accent2) 12%, transparent); }
+.nav-btn.active:hover { }
 .nav-btn.active .nav-emoji { filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25)); }
 .nav-btn.active::before { content: ""; position: absolute; inset: -3px; border-radius: 16px; background: var(--gradient-primary); opacity: 0.35; filter: blur(6px); z-index: -1; }
 .cart-badge { position: absolute; top: -3px; right: -3px; background: linear-gradient(135deg, #fb7185, #ef4444); color: #fff; border-radius: 50%; width: 18px; height: 18px; font-size: 0.62rem; display: flex; align-items: center; justify-content: center; font-weight: 800; box-shadow: 0 2px 6px rgba(239, 68, 68, 0.5); border: 2px solid #fff; animation: badgePop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
@@ -708,6 +706,23 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
 /* Forms & Settings */
 .settings-card { background: var(--surface); border-radius: var(--radius-lg); border: 1px solid var(--border); padding: 1.8rem; margin-bottom: 1.5rem; box-shadow: var(--shadow-sm); }
 .settings-card h4 { font-size: 1.2rem; font-weight: 800; margin-bottom: 1.5rem; color: var(--dark); }
+
+/* Neon toggle switch */
+.neon-switch { position: relative; display: inline-block; width: 48px; height: 26px; flex-shrink: 0; }
+.neon-switch input { opacity: 0; width: 0; height: 0; }
+.neon-switch .neon-slider { position: absolute; cursor: pointer; inset: 0; background: var(--border); border-radius: 100px; transition: 0.2s; }
+.neon-switch .neon-slider::before { content: ""; position: absolute; width: 20px; height: 20px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+.neon-switch input:checked + .neon-slider { background: var(--accent); }
+.neon-switch input:checked + .neon-slider::before { transform: translateX(22px); }
+
+/* Neon glow effect mode */
+.neon-mode .add-cart-btn, .neon-mode .btn-primary, .neon-mode .btn-save, .neon-mode .pd-fixed-bar .pd-btn-add, .neon-mode .checkout-btn {
+  box-shadow: 0 0 10px var(--accent), 0 0 24px var(--accent2), var(--shadow-sm) !important;
+}
+.neon-mode .nav-logo, .neon-mode .section-title, .neon-mode .pd-price2, .neon-mode .product-price {
+  text-shadow: 0 0 8px var(--accent), 0 0 18px var(--accent2);
+}
+.neon-mode .sync-dot { box-shadow: 0 0 10px var(--accent) !important; }
 .form-group { margin-bottom: 1.2rem; }
 .form-group label { display: block; font-size: 0.9rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem; }
 .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 0.85rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: inherit; font-size: 0.95rem; outline: none; transition: all 0.2s; background: var(--bg); color: var(--dark); font-weight: 500; }
@@ -1117,6 +1132,110 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
       <button class="btn btn-save" onclick="saveStoreSettings()">Guardar Cambios</button>
     </div>
     <div class="settings-card">
+      <h4>🎨 Apariencia (Colores)</h4>
+      <p style="font-size:0.9rem;color:var(--text-muted);margin-bottom:1.2rem">Personaliza los colores de la página y el texto. Los cambios se aplican a toda la tienda.</p>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin-bottom:1.2rem">
+        <div class="form-group" style="margin:0">
+          <label>Fondo de la página</label>
+          <div style="display:flex;align-items:center;gap:0.6rem">
+            <input type="color" id="themeBg" value="#f8fafc" oninput="syncThemeHex('themeBg','themeBgHex');previewTheme()" style="width:46px;height:40px;padding:2px;border:1px solid var(--border);border-radius:8px;cursor:pointer;flex-shrink:0">
+            <input type="text" id="themeBgHex" value="#f8fafc" oninput="syncThemeColor('themeBgHex','themeBg');previewTheme()" style="flex:1">
+          </div>
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-top:0.5rem">
+            <input type="range" id="themeBgAlpha" min="0" max="100" value="100" oninput="onAlphaInput('themeBgAlpha','themeBgAlphaLabel');previewTheme()" style="flex:1;accent-color:var(--accent)">
+            <span id="themeBgAlphaLabel" style="font-size:0.72rem;color:var(--text-muted);min-width:34px;text-align:right">100%</span>
+            <button type="button" onclick="setFieldTransparent('themeBgAlpha','themeBgAlphaLabel')" title="Hacer transparente" style="background:none;border:1px solid var(--border);border-radius:6px;padding:0.25rem 0.55rem;font-size:0.68rem;font-weight:600;cursor:pointer;color:var(--text-muted);white-space:nowrap">Transparente</button>
+          </div>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label>Fondo de tarjetas/paneles</label>
+          <div style="display:flex;align-items:center;gap:0.6rem">
+            <input type="color" id="themeSurface" value="#ffffff" oninput="syncThemeHex('themeSurface','themeSurfaceHex');previewTheme()" style="width:46px;height:40px;padding:2px;border:1px solid var(--border);border-radius:8px;cursor:pointer;flex-shrink:0">
+            <input type="text" id="themeSurfaceHex" value="#ffffff" oninput="syncThemeColor('themeSurfaceHex','themeSurface');previewTheme()" style="flex:1">
+          </div>
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-top:0.5rem">
+            <input type="range" id="themeSurfaceAlpha" min="0" max="100" value="100" oninput="onAlphaInput('themeSurfaceAlpha','themeSurfaceAlphaLabel');previewTheme()" style="flex:1;accent-color:var(--accent)">
+            <span id="themeSurfaceAlphaLabel" style="font-size:0.72rem;color:var(--text-muted);min-width:34px;text-align:right">100%</span>
+            <button type="button" onclick="setFieldTransparent('themeSurfaceAlpha','themeSurfaceAlphaLabel')" title="Hacer transparente" style="background:none;border:1px solid var(--border);border-radius:6px;padding:0.25rem 0.55rem;font-size:0.68rem;font-weight:600;cursor:pointer;color:var(--text-muted);white-space:nowrap">Transparente</button>
+          </div>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label>Color del texto</label>
+          <div style="display:flex;align-items:center;gap:0.6rem">
+            <input type="color" id="themeDark" value="#0f172a" oninput="syncThemeHex('themeDark','themeDarkHex');previewTheme()" style="width:46px;height:40px;padding:2px;border:1px solid var(--border);border-radius:8px;cursor:pointer;flex-shrink:0">
+            <input type="text" id="themeDarkHex" value="#0f172a" oninput="syncThemeColor('themeDarkHex','themeDark');previewTheme()" style="flex:1">
+          </div>
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-top:0.5rem">
+            <input type="range" id="themeDarkAlpha" min="0" max="100" value="100" oninput="onAlphaInput('themeDarkAlpha','themeDarkAlphaLabel');previewTheme()" style="flex:1;accent-color:var(--accent)">
+            <span id="themeDarkAlphaLabel" style="font-size:0.72rem;color:var(--text-muted);min-width:34px;text-align:right">100%</span>
+            <button type="button" onclick="setFieldTransparent('themeDarkAlpha','themeDarkAlphaLabel')" title="Hacer transparente" style="background:none;border:1px solid var(--border);border-radius:6px;padding:0.25rem 0.55rem;font-size:0.68rem;font-weight:600;cursor:pointer;color:var(--text-muted);white-space:nowrap">Transparente</button>
+          </div>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label>Texto secundario</label>
+          <div style="display:flex;align-items:center;gap:0.6rem">
+            <input type="color" id="themeTextMuted" value="#64748b" oninput="syncThemeHex('themeTextMuted','themeTextMutedHex');previewTheme()" style="width:46px;height:40px;padding:2px;border:1px solid var(--border);border-radius:8px;cursor:pointer;flex-shrink:0">
+            <input type="text" id="themeTextMutedHex" value="#64748b" oninput="syncThemeColor('themeTextMutedHex','themeTextMuted');previewTheme()" style="flex:1">
+          </div>
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-top:0.5rem">
+            <input type="range" id="themeTextMutedAlpha" min="0" max="100" value="100" oninput="onAlphaInput('themeTextMutedAlpha','themeTextMutedAlphaLabel');previewTheme()" style="flex:1;accent-color:var(--accent)">
+            <span id="themeTextMutedAlphaLabel" style="font-size:0.72rem;color:var(--text-muted);min-width:34px;text-align:right">100%</span>
+            <button type="button" onclick="setFieldTransparent('themeTextMutedAlpha','themeTextMutedAlphaLabel')" title="Hacer transparente" style="background:none;border:1px solid var(--border);border-radius:6px;padding:0.25rem 0.55rem;font-size:0.68rem;font-weight:600;cursor:pointer;color:var(--text-muted);white-space:nowrap">Transparente</button>
+          </div>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label>Color principal (botones)</label>
+          <div style="display:flex;align-items:center;gap:0.6rem">
+            <input type="color" id="themeAccent" value="#049E0D" oninput="syncThemeHex('themeAccent','themeAccentHex');previewTheme()" style="width:46px;height:40px;padding:2px;border:1px solid var(--border);border-radius:8px;cursor:pointer;flex-shrink:0">
+            <input type="text" id="themeAccentHex" value="#049E0D" oninput="syncThemeColor('themeAccentHex','themeAccent');previewTheme()" style="flex:1">
+          </div>
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-top:0.5rem">
+            <input type="range" id="themeAccentAlpha" min="0" max="100" value="100" oninput="onAlphaInput('themeAccentAlpha','themeAccentAlphaLabel');previewTheme()" style="flex:1;accent-color:var(--accent)">
+            <span id="themeAccentAlphaLabel" style="font-size:0.72rem;color:var(--text-muted);min-width:34px;text-align:right">100%</span>
+            <button type="button" onclick="setFieldTransparent('themeAccentAlpha','themeAccentAlphaLabel')" title="Hacer transparente" style="background:none;border:1px solid var(--border);border-radius:6px;padding:0.25rem 0.55rem;font-size:0.68rem;font-weight:600;cursor:pointer;color:var(--text-muted);white-space:nowrap">Transparente</button>
+          </div>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label>Color principal (hover/degradado)</label>
+          <div style="display:flex;align-items:center;gap:0.6rem">
+            <input type="color" id="themeAccent2" value="#088202" oninput="syncThemeHex('themeAccent2','themeAccent2Hex');previewTheme()" style="width:46px;height:40px;padding:2px;border:1px solid var(--border);border-radius:8px;cursor:pointer;flex-shrink:0">
+            <input type="text" id="themeAccent2Hex" value="#088202" oninput="syncThemeColor('themeAccent2Hex','themeAccent2');previewTheme()" style="flex:1">
+          </div>
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-top:0.5rem">
+            <input type="range" id="themeAccent2Alpha" min="0" max="100" value="100" oninput="onAlphaInput('themeAccent2Alpha','themeAccent2AlphaLabel');previewTheme()" style="flex:1;accent-color:var(--accent)">
+            <span id="themeAccent2AlphaLabel" style="font-size:0.72rem;color:var(--text-muted);min-width:34px;text-align:right">100%</span>
+            <button type="button" onclick="setFieldTransparent('themeAccent2Alpha','themeAccent2AlphaLabel')" title="Hacer transparente" style="background:none;border:1px solid var(--border);border-radius:6px;padding:0.25rem 0.55rem;font-size:0.68rem;font-weight:600;cursor:pointer;color:var(--text-muted);white-space:nowrap">Transparente</button>
+          </div>
+        </div>
+      </div>
+<div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0.9rem 1.1rem;margin-bottom:1.2rem">
+        <div>
+          <div style="font-weight:700;font-size:0.95rem;color:var(--dark)">⚡ Efecto Neón (brillo)</div>
+          <div style="font-size:0.8rem;color:var(--text-muted)">Agrega un resplandor a botones y títulos usando el color principal</div>
+        </div>
+        <label class="neon-switch">
+          <input type="checkbox" id="themeNeonEnabled" onchange="previewTheme()">
+          <span class="neon-slider"></span>
+        </label>
+      </div>
+      <div style="margin-bottom:1.2rem">
+        <label style="display:block;font-size:0.85rem;font-weight:700;color:var(--dark);margin-bottom:0.6rem">✨ Paletas Neón</label>
+        <div id="neonPaletteRow" style="display:flex;gap:0.7rem;flex-wrap:wrap"></div>
+      </div>
+      <div style="background:var(--bg);border:1px dashed var(--border);border-radius:var(--radius-sm);padding:1rem 1.1rem;margin-bottom:1.2rem">
+        <div style="font-weight:700;font-size:0.9rem;color:var(--dark);margin-bottom:0.6rem">➕ Crear tu propia paleta neón</div>
+        <p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.8rem">Ajusta los colores de arriba a tu gusto y guárdalos como una paleta nueva para reutilizarla luego.</p>
+        <div style="display:flex;gap:0.6rem;flex-wrap:wrap">
+          <input type="text" id="customPaletteName" placeholder="Nombre de la paleta (ej: Neón Fiesta)" style="flex:1;min-width:200px">
+          <button class="btn btn-primary" onclick="saveCustomPalette()">Guardar paleta actual</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:0.8rem;flex-wrap:wrap">
+        <button class="btn btn-save" onclick="saveThemeSettings()">Guardar Colores</button>
+        <button class="btn btn-primary" style="background:var(--bg);color:var(--dark);border:1px solid var(--border)" onclick="resetThemeSettings()">Restablecer colores</button>
+      </div>
+    </div>
+    <div class="settings-card">
       <h4>💳 Métodos de Pago</h4>
       <p style="font-size:0.9rem;color:var(--text-muted);margin-bottom:1.2rem">Activa o desactiva los métodos de pago y agrega los datos bancarios que verá el cliente.</p>
       <div style="display:flex;flex-direction:column;gap:1.2rem" id="paymentMethodsAdmin">
@@ -1511,6 +1630,16 @@ let storeSettings={name:"DS Distribuidora San Francisco",desc:"Los mejores produ
     pickup:{enabled:false,label:"Recoge en Tienda",icon:"🏪",desc:""}
   },
   pickupStores:[],
+  theme:{
+    bg:"#f8fafc",
+    surface:"#ffffff",
+    dark:"#0f172a",
+    textMuted:"#64748b",
+    accent:"#049E0D",
+    accent2:"#088202",
+    neonEnabled:false,
+    customPalettes:[]
+  },
   socialLinks:{
     whatsapp:{enabled:false,url:"",iconUrl:""},
     facebook:{enabled:false,url:"",iconUrl:""},
@@ -1727,6 +1856,218 @@ function applyStoreSettings(){
   if(si("freeShippingThreshold"))si("freeShippingThreshold").value=s.freeShippingAt??300;
   renderShippingZones();
   applyPaymentMethodsAdmin();
+  applyTheme();
+  populateThemeInputs();
+  renderNeonPalettes();
+}
+
+// ── Apariencia / colores ───────────────────────────────────────
+const THEME_DEFAULTS={bg:"#f8fafc",surface:"#ffffff",dark:"#0f172a",textMuted:"#64748b",accent:"#049E0D",accent2:"#088202",bgAlpha:100,surfaceAlpha:100,darkAlpha:100,textMutedAlpha:100,accentAlpha:100,accent2Alpha:100,neonEnabled:false,customPalettes:[]};
+
+function hexToRgba(hex,alphaPercent){
+  let h=(hex||"#000000").replace("#","");
+  if(h.length===3) h=h.split("").map(c=>c+c).join("");
+  const r=parseInt(h.substring(0,2),16)||0, g=parseInt(h.substring(2,4),16)||0, b=parseInt(h.substring(4,6),16)||0;
+  const a=Math.max(0,Math.min(100,alphaPercent==null?100:alphaPercent))/100;
+  return `rgba(${r}, ${g}, ${b}, ${a})`;
+}
+
+function onAlphaInput(rangeId,labelId){
+  const r=document.getElementById(rangeId), l=document.getElementById(labelId);
+  if(l) l.textContent=(r?r.value:100)+"%";
+}
+
+function setFieldTransparent(rangeId,labelId){
+  const r=document.getElementById(rangeId);
+  if(r){ r.value=0; onAlphaInput(rangeId,labelId); previewTheme(); }
+}
+
+const NEON_PALETTES=[
+  {id:"neonVerde",   label:"Neón Verde",   swatch:"#39FF14", theme:{bg:"#0a0e0a",surface:"#111811",dark:"#eafff0",textMuted:"#8fdba0",accent:"#39FF14",accent2:"#00c853"}},
+  {id:"neonRosa",    label:"Neón Rosa",    swatch:"#FF10F0", theme:{bg:"#12060f",surface:"#1a0a17",dark:"#ffe6f7",textMuted:"#e59ac9",accent:"#FF10F0",accent2:"#ff477e"}},
+  {id:"neonAzul",    label:"Neón Azul",    swatch:"#00E5FF", theme:{bg:"#04070f",surface:"#0a1122",dark:"#e6f4ff",textMuted:"#8ab4e0",accent:"#00E5FF",accent2:"#2979FF"}},
+  {id:"neonMorado",  label:"Neón Morado",  swatch:"#B026FF", theme:{bg:"#0c0714",surface:"#150c22",dark:"#f0e6ff",textMuted:"#b79ae0",accent:"#B026FF",accent2:"#7b2ff7"}},
+  {id:"neonNaranja", label:"Neón Naranja", swatch:"#FF6B00", theme:{bg:"#120a04",surface:"#1c1208",dark:"#fff2e0",textMuted:"#e0b58a",accent:"#FF6B00",accent2:"#FF9500"}},
+  {id:"neonAmarillo",label:"Neón Amarillo",swatch:"#F5FF00", theme:{bg:"#0f0f04",surface:"#181808",dark:"#fffbe0",textMuted:"#e0d98a",accent:"#F5FF00",accent2:"#CFFF00"}},
+  {id:"neonRojo",    label:"Neón Rojo",    swatch:"#FF0044", theme:{bg:"#12040a",surface:"#1c0810",dark:"#ffe6ec",textMuted:"#e08aa0",accent:"#FF0044",accent2:"#FF3366"}},
+  {id:"neonCian",    label:"Neón Cian",    swatch:"#00FFF0", theme:{bg:"#03100f",surface:"#081a18",dark:"#e0fffb",textMuted:"#8ae0d8",accent:"#00FFF0",accent2:"#00D9FF"}},
+  {id:"neonLima",    label:"Neón Lima",    swatch:"#CCFF00", theme:{bg:"#0a1004",surface:"#111a08",dark:"#f5ffe0",textMuted:"#c4e08a",accent:"#CCFF00",accent2:"#AEEA00"}},
+  {id:"neonBlanco",  label:"Neón Blanco",  swatch:"#FFFFFF", theme:{bg:"#050505",surface:"#0f0f0f",dark:"#ffffff",textMuted:"#c0c0c0",accent:"#FFFFFF",accent2:"#E0E0E0"}}
+];
+
+function getCustomPalettes(){
+  return (storeSettings.theme && storeSettings.theme.customPalettes) || [];
+}
+
+function renderNeonPalettes(){
+  const row=document.getElementById("neonPaletteRow");
+  if(!row) return;
+  const presetHtml=NEON_PALETTES.map(p=>`
+    <button type="button" onclick="applyNeonPalette('${p.id}')" title="${p.label}"
+      style="display:flex;flex-direction:column;align-items:center;gap:0.4rem;background:none;border:none;cursor:pointer;font-family:inherit;padding:0.3rem">
+      <span style="width:34px;height:34px;border-radius:50%;display:block;background:${p.swatch};box-shadow:0 0 10px ${p.swatch},0 0 2px rgba(0,0,0,0.3);border:2px solid #fff;outline:1px solid var(--border)"></span>
+      <span style="font-size:0.72rem;font-weight:600;color:var(--text-muted)">${p.label}</span>
+    </button>
+  `).join("");
+  const customHtml=getCustomPalettes().map(p=>`
+    <div style="position:relative;display:flex;flex-direction:column;align-items:center;gap:0.4rem;padding:0.3rem">
+      <button type="button" onclick="applyCustomPalette('${p.id}')" title="${p.label}" style="background:none;border:none;cursor:pointer;font-family:inherit;padding:0;display:flex;flex-direction:column;align-items:center;gap:0.4rem">
+        <span style="width:34px;height:34px;border-radius:50%;display:block;background:${p.swatch};box-shadow:0 0 10px ${p.swatch},0 0 2px rgba(0,0,0,0.3);border:2px solid #fff;outline:1px solid var(--border)"></span>
+        <span style="font-size:0.72rem;font-weight:600;color:var(--text-muted);max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.label}</span>
+      </button>
+      <button type="button" onclick="deleteCustomPalette('${p.id}')" title="Eliminar paleta"
+        style="position:absolute;top:-4px;right:-2px;width:18px;height:18px;border-radius:50%;background:var(--red);color:#fff;border:none;font-size:0.7rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center">×</button>
+    </div>
+  `).join("");
+  row.innerHTML=presetHtml+customHtml;
+}
+
+function applyNeonPalette(id){
+  const p=NEON_PALETTES.find(x=>x.id===id);
+  if(!p) return;
+  fillThemeInputsFrom(p.theme);
+  previewTheme();
+}
+
+function applyCustomPalette(id){
+  const p=getCustomPalettes().find(x=>x.id===id);
+  if(!p) return;
+  fillThemeInputsFrom(p.theme);
+  previewTheme();
+}
+
+function fillThemeInputsFrom(t){
+  const setv=(id,val)=>{const c=document.getElementById(id),h=document.getElementById(id+"Hex"); if(c)c.value=val; if(h)h.value=val;};
+  setv("themeBg",t.bg); setv("themeSurface",t.surface); setv("themeDark",t.dark);
+  setv("themeTextMuted",t.textMuted); setv("themeAccent",t.accent); setv("themeAccent2",t.accent2);
+  const setAlpha=(rangeId,labelId,val)=>{const r=document.getElementById(rangeId); if(r){r.value=val??100; onAlphaInput(rangeId,labelId);}};
+  setAlpha("themeBgAlpha","themeBgAlphaLabel",t.bgAlpha);
+  setAlpha("themeSurfaceAlpha","themeSurfaceAlphaLabel",t.surfaceAlpha);
+  setAlpha("themeDarkAlpha","themeDarkAlphaLabel",t.darkAlpha);
+  setAlpha("themeTextMutedAlpha","themeTextMutedAlphaLabel",t.textMutedAlpha);
+  setAlpha("themeAccentAlpha","themeAccentAlphaLabel",t.accentAlpha);
+  setAlpha("themeAccent2Alpha","themeAccent2AlphaLabel",t.accent2Alpha);
+  const neonChk=document.getElementById("themeNeonEnabled");
+  if(neonChk) neonChk.checked=true;
+}
+
+function saveCustomPalette(){
+  const nameEl=document.getElementById("customPaletteName");
+  const name=(nameEl?.value||"").trim();
+  if(!name){ toast("Ponle un nombre a tu paleta","error"); return; }
+  const gv=id=>document.getElementById(id).value;
+  const ga=id=>{const el=document.getElementById(id); return el?Number(el.value):100;};
+  const theme={
+    bg:gv("themeBg"),surface:gv("themeSurface"),dark:gv("themeDark"),
+    textMuted:gv("themeTextMuted"),accent:gv("themeAccent"),accent2:gv("themeAccent2"),
+    bgAlpha:ga("themeBgAlpha"),surfaceAlpha:ga("themeSurfaceAlpha"),darkAlpha:ga("themeDarkAlpha"),
+    textMutedAlpha:ga("themeTextMutedAlpha"),accentAlpha:ga("themeAccentAlpha"),accent2Alpha:ga("themeAccent2Alpha")
+  };
+  if(!storeSettings.theme) storeSettings.theme={};
+  if(!storeSettings.theme.customPalettes) storeSettings.theme.customPalettes=[];
+  storeSettings.theme.customPalettes.push({ id:"custom_"+Date.now(), label:name, swatch:theme.accent, theme });
+  saveSettings();
+  renderNeonPalettes();
+  if(nameEl) nameEl.value="";
+  toast("Paleta personalizada guardada","success");
+}
+
+function deleteCustomPalette(id){
+  if(!storeSettings.theme || !storeSettings.theme.customPalettes) return;
+  if(!confirm("¿Eliminar esta paleta personalizada?")) return;
+  storeSettings.theme.customPalettes=storeSettings.theme.customPalettes.filter(p=>p.id!==id);
+  saveSettings();
+  renderNeonPalettes();
+  toast("Paleta eliminada","success");
+}
+
+function applyTheme(theme){
+  const t=Object.assign({},THEME_DEFAULTS,storeSettings.theme||{},theme||{});
+  const bg=hexToRgba(t.bg,t.bgAlpha), surface=hexToRgba(t.surface,t.surfaceAlpha), dark=hexToRgba(t.dark,t.darkAlpha),
+        textMuted=hexToRgba(t.textMuted,t.textMutedAlpha), accent=hexToRgba(t.accent,t.accentAlpha), accent2=hexToRgba(t.accent2,t.accent2Alpha);
+  const root=document.documentElement.style;
+  root.setProperty("--bg",bg);
+  root.setProperty("--surface",surface);
+  root.setProperty("--dark",dark);
+  root.setProperty("--dark-soft",dark);
+  root.setProperty("--text-muted",textMuted);
+  root.setProperty("--accent",accent);
+  root.setProperty("--accent2",accent2);
+  root.setProperty("--gradient-primary",`linear-gradient(135deg, ${accent} 0%, ${accent2} 100%)`);
+  root.setProperty("--gradient-secondary",`linear-gradient(135deg, ${accent} 0%, ${accent2} 100%)`);
+  document.documentElement.classList.toggle("neon-mode", !!t.neonEnabled);
+}
+
+function populateThemeInputs(){
+  const t=Object.assign({},THEME_DEFAULTS,storeSettings.theme||{});
+  const map={themeBg:t.bg,themeSurface:t.surface,themeDark:t.dark,themeTextMuted:t.textMuted,themeAccent:t.accent,themeAccent2:t.accent2};
+  Object.entries(map).forEach(([id,val])=>{
+    const colorEl=document.getElementById(id);
+    const hexEl=document.getElementById(id+"Hex");
+    if(colorEl) colorEl.value=val;
+    if(hexEl) hexEl.value=val;
+  });
+  const alphaMap={themeBgAlpha:t.bgAlpha,themeSurfaceAlpha:t.surfaceAlpha,themeDarkAlpha:t.darkAlpha,themeTextMutedAlpha:t.textMutedAlpha,themeAccentAlpha:t.accentAlpha,themeAccent2Alpha:t.accent2Alpha};
+  Object.entries(alphaMap).forEach(([id,val])=>{
+    const r=document.getElementById(id);
+    if(r) r.value=val??100;
+    onAlphaInput(id,id+"Label");
+  });
+  const neonChk=document.getElementById("themeNeonEnabled");
+  if(neonChk) neonChk.checked=!!t.neonEnabled;
+}
+
+function syncThemeHex(colorId,hexId){
+  const c=document.getElementById(colorId), h=document.getElementById(hexId);
+  if(c&&h) h.value=c.value;
+}
+
+function syncThemeColor(hexId,colorId){
+  const h=document.getElementById(hexId), c=document.getElementById(colorId);
+  if(!h||!c) return;
+  let v=h.value.trim();
+  if(!v.startsWith("#")) v="#"+v;
+  if(/^#[0-9a-fA-F]{6}$/.test(v)) c.value=v;
+}
+
+function previewTheme(){
+  const gv=id=>{const el=document.getElementById(id);return el?el.value:null;};
+  const ga=id=>{const el=document.getElementById(id); return el?Number(el.value):100;};
+  const neonChk=document.getElementById("themeNeonEnabled");
+  applyTheme({
+    bg:gv("themeBg"),surface:gv("themeSurface"),dark:gv("themeDark"),
+    textMuted:gv("themeTextMuted"),accent:gv("themeAccent"),accent2:gv("themeAccent2"),
+    bgAlpha:ga("themeBgAlpha"),surfaceAlpha:ga("themeSurfaceAlpha"),darkAlpha:ga("themeDarkAlpha"),
+    textMutedAlpha:ga("themeTextMutedAlpha"),accentAlpha:ga("themeAccentAlpha"),accent2Alpha:ga("themeAccent2Alpha"),
+    neonEnabled:neonChk?neonChk.checked:false
+  });
+}
+
+function saveThemeSettings(){
+  const gv=id=>document.getElementById(id).value;
+  const ga=id=>{const el=document.getElementById(id); return el?Number(el.value):100;};
+  const neonChk=document.getElementById("themeNeonEnabled");
+  storeSettings.theme={
+    bg:gv("themeBg"),surface:gv("themeSurface"),dark:gv("themeDark"),
+    textMuted:gv("themeTextMuted"),accent:gv("themeAccent"),accent2:gv("themeAccent2"),
+    bgAlpha:ga("themeBgAlpha"),surfaceAlpha:ga("themeSurfaceAlpha"),darkAlpha:ga("themeDarkAlpha"),
+    textMutedAlpha:ga("themeTextMutedAlpha"),accentAlpha:ga("themeAccentAlpha"),accent2Alpha:ga("themeAccent2Alpha"),
+    neonEnabled:neonChk?neonChk.checked:false,
+    customPalettes:getCustomPalettes()
+  };
+  saveSettings();
+  applyTheme();
+  toast("Colores guardados","success");
+}
+
+function resetThemeSettings(){
+  const keepCustom=getCustomPalettes();
+  storeSettings.theme=Object.assign({},THEME_DEFAULTS,{customPalettes:keepCustom});
+  saveSettings();
+  applyTheme();
+  populateThemeInputs();
+  renderNeonPalettes();
+  toast("Colores restablecidos","success");
 }
 
 function populateDeptSelects(){
