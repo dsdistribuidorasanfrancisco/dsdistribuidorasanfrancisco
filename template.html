@@ -2506,6 +2506,13 @@ function onBuyerAldeaChange(){
   const aldeaBox=document.getElementById("buyerAldeaNewBox"); if(aldeaBox) aldeaBox.style.display = val==="__new__" ? "flex" : "none";
   updateCheckoutTotal();
 }
+function isValidWaOrGmail(v){
+  const s=(v||"").trim();
+  if(!s) return false;
+  if(s.includes("@")) return /^[a-zA-Z0-9._%+-]+@gmail\.com$/i.test(s);
+  const digits=s.replace(/[^0-9]/g,"");
+  return digits.length>=8;
+}
 function placeOrder(){
   const name=document.getElementById("buyerName").value.trim();
   const contact=document.getElementById("buyerContact").value.trim();
@@ -2514,6 +2521,7 @@ function placeOrder(){
   const address=document.getElementById("buyerAddress").value.trim();
   const notes=document.getElementById("buyerNotes").value.trim();
   if(!name||!contact||!dept||!mun){toast("Completa todos los campos requeridos (*)","error");return;}
+  if(!isValidWaOrGmail(contact)){toast("Ingresa un número de WhatsApp válido o un correo de Gmail (@gmail.com)","error");return;}
   if(dept==="__new__"||mun==="__new__"){toast("Presiona 'Agregar' para confirmar tu departamento/municipio nuevo","error");return;}
   if(document.getElementById("buyerAldea")?.value==="__new__"){toast("Presiona 'Agregar' para confirmar tu lugar nuevo","error");return;}
   const selectedPayment=getSelectedPaymentMethod();
