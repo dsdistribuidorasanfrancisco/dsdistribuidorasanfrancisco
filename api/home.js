@@ -1,23 +1,23 @@
 // api/home.js — Sirve la portada con meta tags Open Graph actualizados
-// automáticamente desde Firebase (nombre, descripción y logo), para que
-// al compartir el enlace siempre se muestre el logo/datos actuales,
-// sin depender de la caché de Facebook/WhatsApp.
+// automáticamente desde Firebase (nombre, descripción y logo).
+// Lee el HTML base desde template.html (en la raíz del proyecto).
 
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto");
 
 const STORE_NAME_DEFAULT = "DS Distribuidora San Francisco";
+const DESC_DEFAULT = "Los mejores productos al mejor precio";
+// Opcional: URL del logo ACTUAL, solo se usa si Firebase no responde.
+const LOGO_RESPALDO = "";
 const FIREBASE_URL =
   "https://dsdistribuidorasfc-2e8ed-default-rtdb.firebaseio.com/settings.json";
 
-// El HTML base se lee una sola vez por instancia de función (se reutiliza
-// entre invocaciones "calientes"; en una nueva instancia se vuelve a leer).
-let indexHtmlCache = null;
-function loadIndexHtml() {
-  if (indexHtmlCache) return indexHtmlCache;
-  const filePath = path.join(process.cwd(), "public", "index.html");
-  indexHtmlCache = fs.readFileSync(filePath, "utf8");
-  return indexHtmlCache;
+let templateCache = null;
+function loadTemplate() {
+  if (templateCache) return templateCache;
+  templateCache = fs.readFileSync(path.join(process.cwd(), "template.html"), "utf8");
+  return templateCache;
 }
 
 function escapeHtml(str) {
@@ -30,14 +30,11 @@ function escapeHtml(str) {
 
 module.exports = async (req, res) => {
   const baseUrl = "https://" + req.headers.host;
-  const html = loadIndexHtml();
+  const html = loadTemplate();
 
   let ogTitle = STORE_NAME_DEFAULT;
-  let ogDesc = "Los mejores productos al mejor precio";
-  // Logo de respaldo: el que ya viene fijo en index.html, por si Firebase
-  // no responde o aún no hay logo configurado.
-  let ogImage =
-    "https://res.cloudinary.com/dxxlersgi/image/upload/v1780665475/logodsdistribuidirasanfrancisco_cr6amy.png";
+  let ogDesc = DESC_DEFAULT;
+  let logo = LOGO_RESPALDO;
 
   try {
     const fbRes = await fetch(FIREBASE_URL);
@@ -46,14 +43,22 @@ module.exports = async (req, res) => {
       if (settings) {
         if (settings.name) ogTitle = settings.name;
         if (settings.desc) ogDesc = settings.desc;
-        // Cada vez que se guarda un logo nuevo en Cloudinary, el enlace es
-        // distinto al anterior, así que Facebook/WhatsApp lo detectan como
-        // una imagen nueva automáticamente — sin necesidad de re-rastrear.
-        if (settings.logo) ogImage = settings.logo;
+        if (settings.logo) logo = settings.logo;
       }
     }
   } catch (err) {
     console.error("Error consultando Firebase (home):", err);
+  }
+
+  // Facebook/WhatsApp no aceptan imágenes "data:" (base64) en og:image.
+  // Si el logo está guardado así, se sirve desde /api/logo con una URL
+  // que cambia cada vez que cambia el logo (v = huella del contenido).
+  let ogImage = "";
+  if (logo.startsWith("data:")) {
+    const v = crypto.createHash("md5").update(logo).digest("hex").slice(0, 10);
+    ogImage = baseUrl + "/api/logo?v=" + v;
+  } else if (logo) {
+    ogImage = logo;
   }
 
   const safeTitle = escapeHtml(ogTitle);
@@ -63,31 +68,31 @@ module.exports = async (req, res) => {
   const ogBlock = `<!-- OG_META_START -->
   <meta property="og:title" content="${safeTitle}">
   <meta property="og:description" content="${safeDesc}">
-  <meta property="og:image" content="${safeImage}">
-  <meta property="og:image:width" content="300">
-  <meta property="og:image:height" content="300">
+  ${ogImage ? `<meta property="og:image" content="${safeImage}">` : ""}
   <meta property="og:url" content="${baseUrl}/">
   <meta property="og:type" content="website">
-  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:card" content="${ogImage ? "summary_large_image" : "summary"}">
   <meta name="twitter:title" content="${safeTitle}">
   <meta name="twitter:description" content="${safeDesc}">
-  <meta name="twitter:image" content="${safeImage}">
+  ${ogImage ? `<meta name="twitter:image" content="${safeImage}">` : ""}
   <!-- OG_META_END -->`;
 
+  // Se usa función como reemplazo para que "$" en textos no rompa el HTML.
   let finalHtml = html.replace(
     /<!-- OG_META_START -->[\s\S]*?<!-- OG_META_END -->/,
-    ogBlock
+    () => ogBlock
   );
 
-  // También refresca el <title> de la pestaña.
-  finalHtml = finalHtml.replace(
-    /<title>[^<]*<\/title>/,
-    `<title>${safeTitle}</title>`
-  );
+  finalHtml = finalHtml.replace(/<title>[^<]*<\/title>/, () => `<title>${safeTitle}</title>`);
+
+  // Favicon: usa el mismo logo (reemplaza el marcador TU-URL-DEL-LOGO.png).
+  if (ogImage) {
+    finalHtml = finalHtml.split("https://TU-URL-DEL-LOGO.png").join(safeImage);
+  } else {
+    finalHtml = finalHtml.replace(/<link[^>]*TU-URL-DEL-LOGO\.png[^>]*>\s*/g, "");
+  }
 
   res.setHeader("Content-Type", "text/html; charset=utf-8");
-  // Cache corta: suficiente para no saturar Firebase en visitas seguidas,
-  // pero lo bastante corta para que el cambio de logo se refleje rápido.
-  res.setHeader("Cache-Control", "s-maxage=60, stale-while-revalidate=30");
+  res.setHeader("Cache-Control", "no-store");
   res.status(200).send(finalHtml);
 };
