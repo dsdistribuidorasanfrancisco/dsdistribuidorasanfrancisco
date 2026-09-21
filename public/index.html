@@ -4494,46 +4494,18 @@ async function saveClientProfile() {
 // ── Vista Previa del Logo ────────────────────────────────
 function openLogoPreview() {
   const heroLogo = document.getElementById("heroLogo");
-  const previewImg = document.getElementById("logoPreviewImg");
-  const modal = document.getElementById("logoPreviewModal");
 
   // Usar siempre el link de logotipo configurado en Ajustes (storeSettings.logo).
   // Si por alguna razón aún no está cargado, usar el src actual del logo del hero como respaldo.
   const logoUrl = (typeof storeSettings !== "undefined" && storeSettings.logo) ? storeSettings.logo : (heroLogo ? heroLogo.src : "");
 
   if (logoUrl) {
-    previewImg.src = logoUrl;
-    modal.classList.add("active");
-    // Prevenir scroll del body
-    document.body.style.overflow = "hidden";
+    // Navegar directamente al enlace de la imagen en la misma pestaña,
+    // así el URL del navegador muestra el link real de la imagen.
+    window.location.href = logoUrl;
   }
 }
-
-function closeLogoPreview(event) {
-  // Si se hace click en el contenido, no cerrar
-  if (event && event.target.classList.contains("logo-preview-content")) {
-    return;
-  }
-  const modal = document.getElementById("logoPreviewModal");
-  modal.classList.remove("active");
-  // Restaurar scroll del body
-  document.body.style.overflow = "auto";
-}
-
-// Cerrar modal con tecla Escape
-document.addEventListener("keydown", function(event) {
-  if (event.key === "Escape") {
-    closeLogoPreview();
-  }
-});
 </script>
-<!-- Modal de Vista Previa del Logo -->
-<div class="logo-preview-modal" id="logoPreviewModal" onclick="closeLogoPreview(event)">
-  <div class="logo-preview-content" onclick="event.stopPropagation()">
-    <button class="logo-preview-close" onclick="closeLogoPreview()">✕</button>
-    <img id="logoPreviewImg" src="" alt="Vista previa del logo" class="logo-preview-img">
-  </div>
-</div>
 
 </body>
 </html>
