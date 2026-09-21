@@ -3055,9 +3055,35 @@ function saveStoreSettings(){
   storeSettings.credentials=document.getElementById("settingCreds").value.trim()||"distribuidora:genesis2024";
   const url=document.getElementById("settingLogoUrl").value.trim();
   const file=document.getElementById("settingLogoFile").files[0];
-  if(file){const r=new FileReader();r.onload=e=>{storeSettings.logo=e.target.result;saveSettings();applyStoreSettings();toast("Tienda guardada","success");};r.readAsDataURL(file);}
-  else{storeSettings.logo=url;saveSettings();applyStoreSettings();toast("Tienda guardada","success");}
+
+  const finish=()=>{
+    saveSettings();
+    applyStoreSettings();
+    toast("Tienda guardada","success");
+    // Pide a Facebook que actualice la vista previa del enlace (espera a que Firebase guarde).
+    setTimeout(()=>{ fetch("/api/refresh-og").catch(()=>{}); },3000);
+  };
+
+  if(file){
+    const r=new FileReader();
+    r.onload=async e=>{
+      try{
+        // Sube a Cloudinary y guarda la URL (no base64).
+        storeSettings.logo=await uploadToImgBB(e.target.result);
+      }catch(err){
+        console.error(err);
+        toast("Error subiendo el logo","error");
+        return;
+      }
+      finish();
+    };
+    r.readAsDataURL(file);
+  }else{
+    storeSettings.logo=url;
+    finish();
+  }
 }
+
 function previewLogoImg(input){const file=input.files[0];if(!file)return;const r=new FileReader();r.onload=e=>{const prev=document.getElementById("logoPreview");prev.src=e.target.result;prev.style.display="block";};r.readAsDataURL(file);}
 function previewLogoUrl(input){const prev=document.getElementById("logoPreview");if(input.value){prev.src=input.value;prev.style.display="block";}else prev.style.display="none";}
 function saveMayoreoSettings(){
