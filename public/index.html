@@ -4496,9 +4496,13 @@ function openLogoPreview() {
   const heroLogo = document.getElementById("heroLogo");
   const previewImg = document.getElementById("logoPreviewImg");
   const modal = document.getElementById("logoPreviewModal");
-  
-  if (heroLogo && heroLogo.src) {
-    previewImg.src = heroLogo.src;
+
+  // Usar siempre el link de logotipo configurado en Ajustes (storeSettings.logo).
+  // Si por alguna razón aún no está cargado, usar el src actual del logo del hero como respaldo.
+  const logoUrl = (typeof storeSettings !== "undefined" && storeSettings.logo) ? storeSettings.logo : (heroLogo ? heroLogo.src : "");
+
+  if (logoUrl) {
+    previewImg.src = logoUrl;
     modal.classList.add("active");
     // Prevenir scroll del body
     document.body.style.overflow = "hidden";
