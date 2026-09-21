@@ -447,7 +447,18 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
 .hero { background: var(--gradient-primary); border-radius: var(--radius-xl); padding: 2rem 2rem 3rem; margin-bottom: 2.5rem; text-align: center; color: #fff; position: relative; overflow: hidden; box-shadow: var(--shadow-glow); }
 .hero::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at top right, rgba(255,255,255,0.2) 0%, transparent 60%); pointer-events: none; }
 .hero-logo-wrap { position: relative; z-index: 2; display: flex; justify-content: center; margin-bottom: 0.5rem; margin-top: -0.5rem; }
-.hero-logo-wrap img { width: 110px; height: 110px; object-fit: contain; border-radius: 50%; background: rgba(255,255,255,0.15); backdrop-filter: blur(6px); padding: 6px; box-shadow: 0 4px 20px rgba(0,0,0,0.25); display: none; }
+.hero-logo-wrap img { width: 110px; height: 110px; object-fit: contain; border-radius: 50%; background: rgba(255,255,255,0.15); backdrop-filter: blur(6px); padding: 6px; box-shadow: 0 4px 20px rgba(0,0,0,0.25); display: none; cursor: pointer; transition: transform 0.3s ease, box-shadow 0.3s ease; }
+.hero-logo-wrap img:hover { transform: scale(1.05); box-shadow: 0 6px 28px rgba(0,0,0,0.35); }
+
+/* Modal de Vista Previa del Logo */
+.logo-preview-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center; animation: fadeInModal 0.3s ease; }
+.logo-preview-modal.active { display: flex; }
+@keyframes fadeInModal { from { opacity: 0; } to { opacity: 1; } }
+.logo-preview-content { position: relative; background: #fff; border-radius: 20px; padding: 2rem; max-width: 90vw; max-height: 90vh; box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: slideUpModal 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); }
+@keyframes slideUpModal { from { opacity: 0; transform: translateY(30px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.logo-preview-close { position: absolute; top: 1rem; right: 1rem; background: #f1f5f9; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: all 0.2s ease; z-index: 10; }
+.logo-preview-close:hover { background: #e2e8f0; transform: rotate(90deg); }
+.logo-preview-img { width: 100%; max-width: 500px; height: auto; object-fit: contain; border-radius: 12px; display: block; margin: 0 auto; }
 .hero h1 { font-size: clamp(2rem, 6vw, 3.5rem); line-height: 1.1; margin-top: 0.5rem; margin-bottom: 1rem; font-weight: 800; letter-spacing: -1px; position: relative; z-index: 2; }
 .hero h1 span { color: #ffffff; text-shadow: 0 2px 10px rgba(255, 255, 255, 0.3); }
 .hero p { opacity: 0.95; font-size: clamp(1rem, 3vw, 1.2rem); max-width: 500px; margin: 0 auto; font-weight: 500; position: relative; z-index: 2; }
@@ -955,7 +966,7 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
 <div class="page active" id="page-shop">
   <div class="hero">
     <div class="hero-logo-wrap">
-      <img id="heroLogo" src="" alt="Logo">
+      <img id="heroLogo" src="" alt="Logo" onclick="openLogoPreview()" title="Click para ampliar">
     </div>
     <h1 id="heroTitle">Bienvenido a<br><span>DS Distribuidora San Francisco</span></h1>
     <p id="heroSubtitle">Los mejores productos al mejor precio</p>
@@ -1079,7 +1090,7 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
       <input class="admin-search" type="text" id="adminSearch" placeholder="Buscar producto..." oninput="filterAdminProducts()">
       <div class="table-wrap">
         <table class="admin-table">
-          <thead><tr><th>SKU</th><th>Nombre</th><th>Costo</th><th>Precio</th><th>Margen</th><th>Stock</th><th>Acciones</th></tr></thead>
+          <thead><tr><th>SKU</th><th>Nombre</th><th>Precio</th><th>Stock</th><th>Acciones</th></tr></thead>
           <tbody id="adminProductsTbody"></tbody>
         </table>
       </div>
@@ -1466,11 +1477,6 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
     <div class="form-group"><label>Descripción</label><textarea id="fDesc" placeholder="Descripción del producto..."></textarea></div>
     <div class="form-group"><label>Precio Público Q *</label><input type="number" id="fPrice" placeholder="0.00" min="0" step="0.01" oninput="previewPrecios()"></div>
     <div class="form-group">
-      <label>💰 Costo Q <span style="font-size:0.8rem;color:var(--text-muted);font-weight:500">(opcional — precio al que compras el producto)</span></label>
-      <input type="number" id="fCost" placeholder="0.00" min="0" step="0.01" oninput="previewPrecios()">
-      <div id="costPreview" style="font-size:0.82rem;color:var(--green);font-weight:700;margin-top:0.3rem"></div>
-    </div>
-    <div class="form-group">
       <label>🏷️ Precio de Oferta Q <span style="font-size:0.8rem;color:var(--text-muted);font-weight:500">(opcional — muestra precio tachado en tienda)</span></label>
       <input type="number" id="fOferta" placeholder="0.00 — deja vacío si no hay oferta" min="0" step="0.01">
     </div>
@@ -1538,7 +1544,7 @@ h1, h2, h3, h4, .section-title, .nav-logo { font-family: "Plus Jakarta Sans", sa
   <div class="modal">
     <h3>Confirmar Pedido</h3>
     <div class="form-group"><label>Nombre Completo *</label><input type="text" id="buyerName" placeholder="Tu nombre completo"></div>
-    <div class="form-group"><label>WhatsApp o Gmail *</label><input type="text" id="buyerContact" placeholder="Ej: 5555-1234 o tunombre@gmail.com"></div>
+    <div class="form-group"><label>Contacto (teléfono o email) *</label><input type="text" id="buyerContact" placeholder="5555-1234"></div>
     <div class="form-group">
       <label>Departamento *</label>
       <select id="buyerDept" onchange="loadMunicipios()"><option value="">Selecciona</option></select>
@@ -2498,13 +2504,6 @@ function onBuyerAldeaChange(){
   const aldeaBox=document.getElementById("buyerAldeaNewBox"); if(aldeaBox) aldeaBox.style.display = val==="__new__" ? "flex" : "none";
   updateCheckoutTotal();
 }
-function isValidWaOrGmail(v){
-  const s=(v||"").trim();
-  if(!s) return false;
-  if(s.includes("@")) return /^[a-zA-Z0-9._%+-]+@gmail\.com$/i.test(s);
-  const digits=s.replace(/[^0-9]/g,"");
-  return digits.length>=8;
-}
 function placeOrder(){
   const name=document.getElementById("buyerName").value.trim();
   const contact=document.getElementById("buyerContact").value.trim();
@@ -2513,7 +2512,6 @@ function placeOrder(){
   const address=document.getElementById("buyerAddress").value.trim();
   const notes=document.getElementById("buyerNotes").value.trim();
   if(!name||!contact||!dept||!mun){toast("Completa todos los campos requeridos (*)","error");return;}
-  if(!isValidWaOrGmail(contact)){toast("Ingresa un número de WhatsApp válido o un correo de Gmail (@gmail.com)","error");return;}
   if(dept==="__new__"||mun==="__new__"){toast("Presiona 'Agregar' para confirmar tu departamento/municipio nuevo","error");return;}
   if(document.getElementById("buyerAldea")?.value==="__new__"){toast("Presiona 'Agregar' para confirmar tu lugar nuevo","error");return;}
   const selectedPayment=getSelectedPaymentMethod();
@@ -2538,7 +2536,7 @@ function placeOrder(){
   orders.push(order);
   localStorage.setItem("lx_orders",JSON.stringify(orders));
   if(window._fb && window._fb.ready()) window._fb.saveOrder(order);
-  const wa=(storeSettings.waNumber||"").replace(/[^0-9]/g,"");
+  const wa=storeSettings.waNumber;
   if(wa){
     const tipoLabel=PRECIO_TIPOS[mayoreoTipo||"publico"]?.label||"Público";
     let msg="Nuevo Pedido #"+order.id+"\n"+name+" | "+contact+"\n"+dept+", "+mun+(address?" - "+address:"")+"\n";
@@ -2668,13 +2666,10 @@ function renderAdminProducts(){
   if(adminPage>totalPages)adminPage=1;
   const start=(adminPage-1)*ADMIN_PAGE_SIZE;
   const page=filtered.slice(start,start+ADMIN_PAGE_SIZE);
-  document.getElementById("adminProductsTbody").innerHTML=page.map(p=>{
-    const cost=Number(p.cost)||0;
-    const price=Number(p.price)||0;
-    const margen=(cost>0&&price>0)?(((price-cost)/price)*100).toFixed(1)+"%":"—";
-    return "<tr><td>"+(p.sku||"—")+"</td><td>"+p.name+"</td><td>"+(cost>0?"Q"+cost.toFixed(2):"—")+"</td><td>Q"+price.toFixed(2)+"</td><td>"+margen+"</td><td>"+p.stock+"</td>"+
-    "<td style='display:flex;gap:0.5rem'><button class='btn-edit' onclick='openEditModal("+p.id+")'>Editar</button><button class='btn-del' onclick='deleteProduct("+p.id+")'>Eliminar</button></td></tr>";
-  }).join()||"<tr><td colspan='7' style='text-align:center;color:var(--text-muted)'>Sin productos</td></tr>";
+  document.getElementById("adminProductsTbody").innerHTML=page.map(p=>
+    "<tr><td>"+(p.sku||"—")+"</td><td>"+p.name+"</td><td>Q"+Number(p.price).toFixed(2)+"</td><td>"+p.stock+"</td>"+
+    "<td style='display:flex;gap:0.5rem'><button class='btn-edit' onclick='openEditModal("+p.id+")'>Editar</button><button class='btn-del' onclick='deleteProduct("+p.id+")'>Eliminar</button></td></tr>"
+  ).join()||"<tr><td colspan='5' style='text-align:center;color:var(--text-muted)'>Sin productos</td></tr>";
   var bar=document.getElementById("adminPaginationBar");
   if(bar){
     bar.innerHTML="<span style='font-size:0.9rem;color:var(--text-muted);margin-right:0.5rem'>"+total+" productos — Pág "+adminPage+"/"+totalPages+"</span>"+
@@ -2719,11 +2714,10 @@ function saveInventoryUpdate(){
 }
 function openAddModal(){
   editingId=null; document.getElementById("modalTitle").textContent="Agregar Producto";
-  ["fSku","fName","fCategoria","fDesc","fPrice","fCost","fOferta","fStock","fImgUrl","fImgData","fMediaDocena","fDocena","fFardo","fUnidFardo","fMayor","fUnidMayor"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
+  ["fSku","fName","fCategoria","fDesc","fPrice","fOferta","fStock","fImgUrl","fImgData","fMediaDocena","fDocena","fFardo","fUnidFardo","fMayor","fUnidMayor"].forEach(id=>{const el=document.getElementById(id);if(el)el.value="";});
   const opEl=document.getElementById("fMayoreoOperacion"); if(opEl) opEl.value="directo";
   document.getElementById("imgPreview").style.display="none";
   document.getElementById("precioPreview").textContent="";
-  const cpEl=document.getElementById("costPreview"); if(cpEl) cpEl.textContent="";
   _multiImgs=[]; _renderMultiImgList();
   document.getElementById("modalOverlay").classList.add("open");
 }
@@ -2733,7 +2727,6 @@ function openEditModal(id){
   document.getElementById("fSku").value=p.sku||""; document.getElementById("fName").value=p.name||"";
   document.getElementById("fCategoria").value=p.categoria||"";
   document.getElementById("fDesc").value=p.desc||""; document.getElementById("fPrice").value=p.price||"";
-  const fcEl=document.getElementById("fCost"); if(fcEl) fcEl.value=(p.cost||0)>0?p.cost:"";
   document.getElementById("fStock").value=p.stock??""; document.getElementById("fImgUrl").value=p.imgUrl||"";
   document.getElementById("fImgData").value=p.img||"";
   // Cargar precios mayoristas si existen
@@ -2756,7 +2749,6 @@ function openEditModal(id){
   const prev=document.getElementById("imgPreview"); prev.style.display="none";
   document.getElementById("precioPreview").textContent="";
   document.getElementById("modalOverlay").classList.add("open");
-  previewPrecios();
 }
 function closeModal(){document.getElementById("modalOverlay").classList.remove("open");editingId=null;}
 
@@ -2796,24 +2788,10 @@ function previewPrecios(){
   if(fa>0) prev+="FARDO: Q"+fa.toFixed(2)+"  ";
   if(ex>0) prev+="MAYOR: Q"+ex.toFixed(2);
   document.getElementById("precioPreview").textContent=prev;
-
-  const cost=parseFloat(document.getElementById("fCost")?.value)||0;
-  const cpEl=document.getElementById("costPreview");
-  if(cpEl){
-    if(cost>0 && base>0){
-      const utilidad=base-cost;
-      const margen=(utilidad/base)*100;
-      cpEl.style.color=utilidad>=0?"var(--green)":"var(--red)";
-      cpEl.textContent="Utilidad: Q"+utilidad.toFixed(2)+" ("+margen.toFixed(1)+"% margen)";
-    } else {
-      cpEl.textContent="";
-    }
-  }
 }
 function saveProduct(){
   const sku=document.getElementById("fSku").value.trim(), name=document.getElementById("fName").value.trim();
   const desc=document.getElementById("fDesc").value.trim(), price=parseFloat(document.getElementById("fPrice").value);
-  const cost=parseFloat(document.getElementById("fCost")?.value)||0;
   const categoria=document.getElementById("fCategoria").value.trim();
   const stock=parseInt(document.getElementById("fStock").value);
   if(!name||isNaN(price)){toast("Nombre y precio requeridos","error");return;}
@@ -2832,7 +2810,7 @@ function saveProduct(){
   const precio_mayoristas=precio_docena||precio_media_docena||precio_fardo||precio_mayor||0;
   const unidades_fardo=parseInt(document.getElementById("fUnidFardo")?.value,10)||0;
   const unidades_mayor=parseInt(document.getElementById("fUnidMayor")?.value,10)||0;
-  const extras={cost,precio_mayoristas,precio_media_docena,precio_docena,precio_fardo,precio_mayor,precio_oferta,unidades_fardo,unidades_mayor};
+  const extras={precio_mayoristas,precio_media_docena,precio_docena,precio_fardo,precio_mayor,precio_oferta,unidades_fardo,unidades_mayor};
 
   // Collect final valid images (filter empty URLs)
   const validImgs = _multiImgs.filter(m=>m.src&&m.src.trim());
@@ -3155,10 +3133,7 @@ function openQuote(){
 }
 function printQuote(){window.print();}
 function shareQuoteWhatsApp(){
-  const waRaw=storeSettings.waNumber||"";
-  const wa=waRaw.replace(/[^0-9]/g,"");
-  if(!wa){toast("Configura el número de WhatsApp del negocio en Ajustes antes de compartir","error");return;}
-  const name=storeSettings.name||"DS Distribuidora San Francisco";
+  const wa=storeSettings.waNumber, name=storeSettings.name||"DS Distribuidora San Francisco";
   const esMayoreo=mayoreoMode&&mayoreoTipo&&mayoreoTipo!=="publico";
   const labelActivo=esMayoreo?(MAYOREO_SUB_TIPOS[mayoreoTipo]?.label||mayoreoTipo):"Público";
   const client=document.getElementById("quoteClient").value;
@@ -3168,7 +3143,7 @@ function shareQuoteWhatsApp(){
   cart.forEach(ci=>{const p=products.find(x=>x.id===ci.id);if(!p)return;const pu=getPrecioCarritoItem(p,ci.qty).precio;msg+="- "+p.name+" x"+ci.qty+" = Q"+(pu*ci.qty).toFixed(2)+"\n";});
   const total=cart.reduce((s,ci)=>{const p=products.find(x=>x.id===ci.id);return s+(p?getPrecioCarritoItem(p,ci.qty).precio*ci.qty:0);},0);
   msg+="\nTOTAL: Q"+total.toFixed(2);
-  window.open("https://wa.me/"+wa+"?text="+encodeURIComponent(msg),"_blank");
+  window.open("https://wa.me/"+(wa||"")+"?text="+encodeURIComponent(msg),"_blank");
 }
 
 
@@ -3178,13 +3153,12 @@ function exportInventoryCSV(){
   var q=(document.getElementById("adminSearch")?.value||"").toLowerCase().trim();
   var lista=q?products.filter(function(p){return p.name.toLowerCase().includes(q)||(p.sku||"").toLowerCase().includes(q);}):products;
   if(!lista.length){toast("No hay productos que coincidan con la búsqueda","error");return;}
-  var headers=["sku","nombre","precio","costo","precio_oferta","precio_media_docena","precio_docena","precio_fardo","unidades_fardo","precio_mayor","unidades_mayor","stock","descripcion","imgUrl","Categoría"];
+  var headers=["sku","nombre","precio","precio_oferta","precio_media_docena","precio_docena","precio_fardo","unidades_fardo","precio_mayor","unidades_mayor","stock","descripcion","imgUrl","Categoría"];
   var rows=lista.map(function(p){
     return [
       fCSV(p.sku||""),
       fCSV(p.name||""),
       p.price||0,
-      (p.cost||0)>0?p.cost:0,
       (p.precio_oferta||0)>0?p.precio_oferta:0,
       (p.precio_media_docena||0)>0?p.precio_media_docena:0,
       (p.precio_docena||0)>0?p.precio_docena:0,
@@ -3232,7 +3206,6 @@ function importInventoryCSV(e){
         sku:gi(["sku","clave"]),
         name:gi(["nombre","name"]),
         price:gi(["precio","price"]),
-        cost:gi(["costo","cost"]),
         precio_oferta:gi(["precio_oferta","oferta"]),
         precio_media_docena:gi(["precio_media_docena","media_docena"]),
         precio_docena:gi(["precio_docena","docena","doc"]),
@@ -3252,7 +3225,6 @@ function importInventoryCSV(e){
         if(!cols.length||!cols[idx.name])continue;
         var name=cols[idx.name].trim();
         var price=parseFloat(cols[idx.price])||0;
-        var cost=idx.cost>=0?parseFloat(cols[idx.cost])||0:0;
         var stock=idx.stock>=0?parseInt(cols[idx.stock])||0:0;
         var sku=idx.sku>=0?cols[idx.sku]||"":"";
         var desc=idx.desc>=0?cols[idx.desc]||"":"";
@@ -3269,8 +3241,8 @@ function importInventoryCSV(e){
         var ex=sku
           ? products.find(function(p){return p.sku&&p.sku.trim()===sku.trim();})||products.find(function(p){return p.name.toLowerCase().trim()===name.toLowerCase().trim();})
           : products.find(function(p){return p.name.toLowerCase().trim()===name.toLowerCase().trim();});
-        if(ex){Object.assign(ex,{sku:sku,name:name,price:price,cost:cost,stock:stock,desc:desc,imgUrl:imgUrl||ex.imgUrl||"",categoria:categoria,precio_oferta:precio_oferta,precio_media_docena:precio_media_docena,precio_docena:precio_docena,precio_fardo:precio_fardo,unidades_fardo:unidades_fardo,precio_mayor:precio_mayor,unidades_mayor:unidades_mayor,precio_mayoristas:precio_mayoristas});updated++;}
-        else{products.push({id:nextId(),sku:sku,name:name,price:price,cost:cost,stock:stock,desc:desc,img:"",imgUrl:imgUrl,categoria:categoria,precio_oferta:precio_oferta,precio_media_docena:precio_media_docena,precio_docena:precio_docena,precio_fardo:precio_fardo,unidades_fardo:unidades_fardo,precio_mayor:precio_mayor,unidades_mayor:unidades_mayor,precio_mayoristas:precio_mayoristas});added++;}
+        if(ex){Object.assign(ex,{sku:sku,name:name,price:price,stock:stock,desc:desc,imgUrl:imgUrl||ex.imgUrl||"",categoria:categoria,precio_oferta:precio_oferta,precio_media_docena:precio_media_docena,precio_docena:precio_docena,precio_fardo:precio_fardo,unidades_fardo:unidades_fardo,precio_mayor:precio_mayor,unidades_mayor:unidades_mayor,precio_mayoristas:precio_mayoristas});updated++;}
+        else{products.push({id:nextId(),sku:sku,name:name,price:price,stock:stock,desc:desc,img:"",imgUrl:imgUrl,categoria:categoria,precio_oferta:precio_oferta,precio_media_docena:precio_media_docena,precio_docena:precio_docena,precio_fardo:precio_fardo,unidades_fardo:unidades_fardo,precio_mayor:precio_mayor,unidades_mayor:unidades_mayor,precio_mayoristas:precio_mayoristas});added++;}
       }
       sortProductsAZ(); saveProducts();renderAdminProducts();populateInventorySelect();renderShop();
       toast("Importado: "+added+" nuevos, "+updated+" actualizados","success");
@@ -4518,7 +4490,46 @@ async function saveClientProfile() {
   document.getElementById("clientDashName").textContent = name;
   toast("Perfil actualizado", "success");
 }
+
+// ── Vista Previa del Logo ────────────────────────────────
+function openLogoPreview() {
+  const heroLogo = document.getElementById("heroLogo");
+  const previewImg = document.getElementById("logoPreviewImg");
+  const modal = document.getElementById("logoPreviewModal");
+  
+  if (heroLogo && heroLogo.src) {
+    previewImg.src = heroLogo.src;
+    modal.classList.add("active");
+    // Prevenir scroll del body
+    document.body.style.overflow = "hidden";
+  }
+}
+
+function closeLogoPreview(event) {
+  // Si se hace click en el contenido, no cerrar
+  if (event && event.target.classList.contains("logo-preview-content")) {
+    return;
+  }
+  const modal = document.getElementById("logoPreviewModal");
+  modal.classList.remove("active");
+  // Restaurar scroll del body
+  document.body.style.overflow = "auto";
+}
+
+// Cerrar modal con tecla Escape
+document.addEventListener("keydown", function(event) {
+  if (event.key === "Escape") {
+    closeLogoPreview();
+  }
+});
 </script>
+<!-- Modal de Vista Previa del Logo -->
+<div class="logo-preview-modal" id="logoPreviewModal" onclick="closeLogoPreview(event)">
+  <div class="logo-preview-content" onclick="event.stopPropagation()">
+    <button class="logo-preview-close" onclick="closeLogoPreview()">✕</button>
+    <img id="logoPreviewImg" src="" alt="Vista previa del logo" class="logo-preview-img">
+  </div>
+</div>
 
 </body>
 </html>
